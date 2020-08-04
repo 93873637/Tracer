@@ -61,6 +61,7 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         mTrackPaint.setColor(ComDef.TRACK_LINE_COLOR);
         mTrackPaint.setStrokeWidth(TRACK_LINE_WIDTH);
         //####@:
+        //load direction bitmap
 //        Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.dir_plane);
 //        Matrix matrix = new Matrix();
 //        float scaleWidth = 1.0f;
