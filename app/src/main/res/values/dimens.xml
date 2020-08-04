@@ -1,0 +1,10 @@
+<resources>
+    <dimen name="main_text_size">22sp</dimen>
+    <dimen name="time_text_size">22sp</dimen>
+    <dimen name="time_padding_top">6dp</dimen>
+    <dimen name="time_padding_bottom">6dp</dimen>
+    <dimen name="control_padding_top">6dp</dimen>
+    <dimen name="control_padding_bottom">6dp</dimen>
+    <dimen name="tracer_text_size">30sp</dimen>
+    <dimen name="track_text_size">28sp</dimen>
+</resources>
