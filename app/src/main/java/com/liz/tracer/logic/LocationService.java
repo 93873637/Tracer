@@ -109,6 +109,34 @@ public class LocationService {
         return mIsRunning;
     }
 
+    public Location getValidBearingLocation() {
+        int index = mLocationList.size() - 1;
+        while(index >= 0) {
+            float bearing = mLocationList.get(index).getBearing();
+            if (Math.abs(bearing) > 1e-3f) {
+                return mLocationList.get(index);
+            }
+            index --;
+        }
+        return null;
+    }
+
+    public float getValidBearing() {
+        Location loc = getValidBearingLocation();
+        if (loc == null) {
+            return 0;
+        }
+        return loc.getBearing();
+    }
+
+    public String getValidBearingText() {
+        Location loc = getValidBearingLocation();
+        if (loc == null) {
+            return "NA";
+        }
+        return LocationUtils.getBearingName(loc.getBearing());
+    }
+
     public int getBearing() {
         Location location = getLastLocation();
         if (location == null) {
@@ -230,7 +258,7 @@ public class LocationService {
     public String getStatisInfo() {
         return "<b><font color='red'>" + DataLogic.inst().getDistanceTotalText() + "</font></b>"
                 + "<br>"
-                + "<b><font color='#00ffb0'>" + LocationService.inst().getDurationText() + " </font></b>"
+                + "<b><font color='#00aa88'>" + LocationService.inst().getDurationText() + " </font></b>"
                 + "<br>"
                 + "<b><font color='#00ff00'>" + LocationService.inst().getMaxSpeedText() + "</font></b>"
                 + "<br>"
@@ -238,7 +266,7 @@ public class LocationService {
                 + "<br>"
                 + "<b><font color='red'>" + LocationService.inst().getCurrentSpeedText() + "</font></b>"
                 + "<br>"
-                + "<b><font color='#b0ff00'>" + LocationService.inst().getBearingText() + "</font></b>"
+                + "<b><font color='#88ee00'>" + LocationService.inst().getValidBearingText() + "</font></b>"
                 ;
     }
 

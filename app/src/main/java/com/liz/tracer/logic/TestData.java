@@ -13,7 +13,7 @@ import static com.liz.androidutils.LocationUtils.createLocation;
 public class TestData {
 
     public static final int TEST_TIMER_DELAY = 200;
-    public static final int TEST_TIMER_PERIOD = 1000;
+    public static final int TEST_TIMER_PERIOD = 30;
 
     private static ArrayList<Location> mTestLocationList = new ArrayList<>();
     private static int mLocationIndex = 0;
@@ -67,13 +67,13 @@ public class TestData {
 
     public static void loadTestData() {
         mTestLocationList.clear();
-        //loadTestData1();
-        loadTestData2();
+        loadTestData1();
+        //loadTestData2();
     }
 
     private static void loadTestData1() {
         loadTestData1_0();
-        loadTestData1_1();
+        //loadTestData1_1();
     }
 
     private static void loadTestData2() {
@@ -89,9 +89,6 @@ public class TestData {
         loadTestLocation(createLocation(116.57786934, 39.95771942, 18.8, 4.1f, 359.2f, 3.2f, 1595294344000L));
         loadTestLocation(createLocation(116.5778589, 39.9577536, 17.4, 3.44f, 355.8f, 3.2f, 1595294345000L));
         loadTestLocation(createLocation(116.57785345, 39.957774, 17.2, 2.17f, 348.2f, 3.2f, 1595294346000L));
-    }
-
-    private static void loadTestData1_1() {
         loadTestLocation(createLocation(116.57785547, 39.95779228, 15.3, 0.85f, 346.4f, 3.2f, 1595294347000L));
         loadTestLocation(createLocation(116.57784822, 39.95779481, 15.5, 0.56f, 346.4f, 3.2f, 1595294348000L));
         loadTestLocation(createLocation(116.57785001, 39.95779918, 16.0, 0.48f, 345.4f, 3.2f, 1595294349000L));
@@ -109,6 +106,9 @@ public class TestData {
         loadTestLocation(createLocation(116.5777715, 39.95795173, 15.4, 0.81f, 346.3f, 3.2f, 1595294372000L));
         loadTestLocation(createLocation(116.57776806, 39.95795772, 14.8, 0.47f, 339.9f, 3.2f, 1595294373000L));
         loadTestLocation(createLocation(116.57776393, 39.95795417, 11.6, 0.0f, 0.0f, 3.2f, 1595294379000L));
+    }
+
+    private static void loadTestData1_1() {
         loadTestLocation(createLocation(116.57776756, 39.95795928, 7.4, 0.0f, 0.0f, 3.2f, 1595294383000L));
         loadTestLocation(createLocation(116.57776742, 39.95796613, 7.1, 1.1f, 343.2f, 3.2f, 1595294388000L));
         loadTestLocation(createLocation(116.57775592, 39.95797902, 7.1, 2.28f, 328.4f, 3.2f, 1595294389000L));

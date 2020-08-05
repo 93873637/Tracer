@@ -7,4 +7,5 @@
     <dimen name="control_padding_bottom">6dp</dimen>
     <dimen name="tracer_text_size">30sp</dimen>
     <dimen name="track_text_size">28sp</dimen>
+    <dimen name="track_surface_text_size">22sp</dimen>
 </resources>

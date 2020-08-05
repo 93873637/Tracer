@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
@@ -171,11 +172,6 @@ public class MainActivity extends AppCompatActivityEx {
 
         mCurrentBearing = LocationService.inst().getBearing();
         ivOrientation.setRotation(mCurrentBearing);
-
-        //##@:
-        //mCurrentBearing = LocationService.inst().getBearing();
-        //ivOrientation.setRotation(mCurrentBearing);
-        //setBearingAnimation(170);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -285,17 +281,17 @@ public class MainActivity extends AppCompatActivityEx {
         tvAverageSpeedInfo.setText(LocationService.inst().getAverageSpeedText());
         tvStatisInfo.setText(Html.fromHtml(LocationService.inst().getStatisInfo()));
 
-        if (LocationService.inst().isRunning() && LocationService.inst().hasSpeed()){
-            ivOrientation.setBackgroundResource(R.drawable.orientation);
-            if (ComDef.BEARING_ANIMATION) {
-                setBearingAnimation(LocationService.inst().getBearing());
-            } else {
-                ivOrientation.setRotation(LocationService.inst().getBearing());
-            }
-        }
-        else {
+        Location loc = LocationService.inst().getValidBearingLocation();
+        if (loc == null) {
             ivOrientation.setRotation(0);
             ivOrientation.setBackgroundResource(R.drawable.compass_earth);
+        } else {
+            ivOrientation.setBackgroundResource(R.drawable.orientation);
+            if (ComDef.BEARING_ANIMATION) {
+                setBearingAnimation(LocationService.inst().getValidBearing());
+            } else {
+                ivOrientation.setRotation(LocationService.inst().getValidBearing());
+            }
         }
 
         // set speed bar showing

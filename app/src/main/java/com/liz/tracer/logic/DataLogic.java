@@ -114,13 +114,6 @@ public class DataLogic extends VirtualMap {
     }
 
     public String getTestInfo() {
-        String lastPosInfo = "NA/NA";
-        MapPoint lsp = DataLogic.inst().getLastSurfacePoint();
-        if (lsp != null) {
-            lastPosInfo = (int) lsp.x + "/" + (int) lsp.y;
-        }
-        return getScreenSize() + "\n"
-                + lastPosInfo + "\n"
-                + TestData.getTestInfo();
+        return TestData.getTestInfo();
     }
 }

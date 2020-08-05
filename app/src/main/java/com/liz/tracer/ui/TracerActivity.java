@@ -1,6 +1,7 @@
 package com.liz.tracer.ui;
 
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -209,24 +210,19 @@ public class TracerActivity extends AppCompatActivityEx {
     }
 
     private void updateBearing() {
-        if (!LocationService.inst().isRunning()) {
+        Location loc = LocationService.inst().getValidBearingLocation();
+        if (loc == null) {
             ivOrientation.setRotation(0);
             ivOrientation.setBackgroundResource(R.drawable.compass_earth);
-            tvOrientation.setText(LocationService.inst().getBearingText());
-        }
-        else {
-            if (LocationService.inst().hasSpeed()) {
-                ivOrientation.setBackgroundResource(R.drawable.orientation);
-                if (ComDef.BEARING_ANIMATION) {
-                    setBearingAnimation(LocationService.inst().getBearing());
-                } else {
-                    ivOrientation.setRotation(LocationService.inst().getBearing());
-                }
-                tvOrientation.setText(LocationService.inst().getBearingText());
+            tvOrientation.setText("NA");
+        } else {
+            ivOrientation.setBackgroundResource(R.drawable.orientation);
+            if (ComDef.BEARING_ANIMATION) {
+                setBearingAnimation(LocationService.inst().getValidBearing());
+            } else {
+                ivOrientation.setRotation(LocationService.inst().getValidBearing());
             }
-            else {
-                // do nothing to keep last state
-            }
+            tvOrientation.setText(LocationService.inst().getValidBearingText());
         }
     }
 

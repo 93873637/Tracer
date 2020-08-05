@@ -16,7 +16,7 @@ public class VirtualMap {
 
     public static final int ZOOM_MODE_1_TO_1 = 1;  // 1 meter : 1 pixel
     public static final int ZOOM_MODE_FIT_SCREEN = 2;  // fit to surface screen size
-    public static final int ZOOM_MODE_DEFAULT = ZOOM_MODE_1_TO_1;
+    public static final int ZOOM_MODE_DEFAULT = ZOOM_MODE_FIT_SCREEN;//###@:ZOOM_MODE_1_TO_1;
 
     final private Object mDataLock = new Object();
 
@@ -147,11 +147,17 @@ public class VirtualMap {
     }
 
     public String getMapInfo() {
+        String lastPosInfo = "NA/NA";
+        MapPoint lsp = DataLogic.inst().getLastSurfacePoint();
+        if (lsp != null) {
+            lastPosInfo = (int) lsp.x + "/" + (int) lsp.y;
+        }
         return LocationUtils.formatDistance(getMapWidth()) + "m/" + LocationUtils.formatDistance(getMapHeight()) + "m"
-                + "  " + new DecimalFormat("#0.00").format(mUserZoomValue) + "/" + new DecimalFormat("#0.00").format(mMapScale)
-                + "\n"
-                + "  " + (int)mTranslationX + "/" + (int)mTranslationY
-                + "  " + (int)mMapTransX + "/" + (int)mMapTransY
+                + "\n" + new DecimalFormat("#0.00").format(mUserZoomValue) + "/" + new DecimalFormat("#0.00").format(mMapScale)
+                + "\n" + (int)mTranslationX + "/" + (int)mTranslationY
+                + "\n" + (int)mMapTransX + "/" + (int)mMapTransY
+                + "\n" + getScreenSize()
+                + "\n" + lastPosInfo
                 ;
     }
 

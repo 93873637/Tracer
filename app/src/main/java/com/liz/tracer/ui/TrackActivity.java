@@ -1,7 +1,6 @@
 package com.liz.tracer.ui;
 
 import android.content.Intent;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -122,31 +121,32 @@ public class TrackActivity extends AppCompatActivityEx {
         tv.setBackgroundColor(DataLogic.getSpeedBarColor(speed));
     }
 
-    @Override
-    public void onZoomStart() {
-        DataLogic.inst().onZoomStart();
-    }
-
-    @Override
-    public void onZoom(double zoom) {
-        LogUtils.td("zoom=" + zoom);
-        DataLogic.inst().onUserZoom(zoom);
-        mTrackSurface.updateTrackSurface();
-    }
-
-    @Override
-    public void onMove(Point p1, Point p2, float dx, float dy, float d, float b) {
-        LogUtils.td("dx=" + dx + ", dy=" + dy + ", d=" + d + ", b=" + b);
-        DataLogic.inst().onUserTranslation(dx, dy);
-        mTrackSurface.updateTrackSurface();
-    }
-
-    @Override
-    protected void onDoubleClick() {
-        LogUtils.trace();
-        DataLogic.inst().switchZoomMode();
-        mTrackSurface.updateTrackSurface();
-    }
+    //#####@:DIU:
+//    @Override
+//    public void onZoomStart() {
+//        DataLogic.inst().onZoomStart();
+//    }
+//
+//    @Override
+//    public void onZoom(double zoom) {
+//        LogUtils.td("zoom=" + zoom);
+//        DataLogic.inst().onUserZoom(zoom);
+//        mTrackSurface.updateTrackSurface();
+//    }
+//
+//    @Override
+//    public void onMove(Point p1, Point p2, float dx, float dy, float d, float b) {
+//        LogUtils.td("dx=" + dx + ", dy=" + dy + ", d=" + d + ", b=" + b);
+//        DataLogic.inst().onUserTranslation(dx, dy);
+//        mTrackSurface.updateTrackSurface();
+//    }
+//
+//    @Override
+//    protected void onDoubleClick() {
+//        LogUtils.trace();
+//        DataLogic.inst().switchZoomMode();
+//        mTrackSurface.updateTrackSurface();
+//    }
 
     protected void updateDirectionIcon() {
         if (!LocationService.inst().isRunning()) {
@@ -157,12 +157,13 @@ public class TrackActivity extends AppCompatActivityEx {
             if (lsp == null) {
                 ivDirection.setTranslationX(0);
                 ivDirection.setTranslationY(0);
+                ivDirection.setRotation(0);
             }
             else {
                 ivDirection.setTranslationX((int)lsp.x);
                 ivDirection.setTranslationY((int)lsp.y);
+                ivDirection.setRotation(LocationService.inst().getValidBearing());
             }
-            ivDirection.setRotation(LocationService.inst().getBearing());
         }
     }
 
@@ -173,7 +174,7 @@ public class TrackActivity extends AppCompatActivityEx {
         tvTimeElapsed.setText(LocationService.inst().getDurationTextFormat());
 
         mTrackSurface.updateTrackSurface();
-        tvBearing.setText(LocationService.inst().getBearingText());
+        tvBearing.setText(LocationService.inst().getValidBearingText());
         tvMapInfo.setText(DataLogic.inst().getMapInfo());
         updateDirectionIcon();
 
