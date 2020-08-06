@@ -6,12 +6,10 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.widget.Toast;
 
 import com.liz.androidutils.LogUtils;
 import com.liz.tracer.logic.ComDef;
@@ -89,88 +87,112 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // onTouch Handler
 
-    float xDown, yDown;
-    float xUp, yUp;
-    boolean isLongClickModule = false;
-    boolean isLongClicking = false;
+    private static final int TOUCH_OFFSET_MIN = 5;  // unit by pixel
+    private static final int FIRST_CLICK_TIME_OUT = 200;  // unit by ms
+    private static final int LONG_PRESS_INTERVAL = 500;  // unit by ms
+
+    private float mDownX, mDownY;
+    private float mUpX, mUpY;
+    private long mDownTime = 0;
+    private int mClickCount = 0;
 
     @Override
-    public boolean onTouch(View v, MotionEvent motionEvent) {
-        if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-            xDown = motionEvent.getX();
-            yDown = motionEvent.getY();
-            LogUtils.td("xDown=" + xDown + ", yDown=" + yDown);
-        } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-            xUp = motionEvent.getX();
-            yUp = motionEvent.getY();
-            LogUtils.td("xUp=" + xUp + ", yUp=" + yUp);
-
-            if (isLongClickModule) {
-                isLongClickModule = false;
-                isLongClicking = false;
-            }
-            xUp = motionEvent.getX();
-
-            Log.v("OnTouchListener", "Up");
-            //按下和松开绝对值差当大于20时滑动，否则不显示
-            if ((xUp - xDown) > 20) {
-                //添加要处理的内容
-                Toast.makeText(this.getContext(), "scroll right", Toast.LENGTH_SHORT).show();
-            } else if ((xUp - xDown) < -20) {
-                Toast.makeText(this.getContext(), "scroll left", Toast.LENGTH_SHORT).show();
-                //添加要处理的内容
-            } else if (0 == (xDown - xUp)) {
-                int viewWidth = this.getWidth();
-                if (xDown < viewWidth / 3) {
-                    //靠左点击
-                } else if (xDown > viewWidth / 3 && xDown < viewWidth * 2 / 3) {
-                    //中间点击
-
-                } else {
-                    //靠右点击
-                }
-                /**
-                 * not scroll
-                 */
-                //showNavigation();
-                Toast.makeText(this.getContext(), "not scroll", Toast.LENGTH_SHORT).show();
-            }
-        } else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
-            //当滑动时背景为选中状态 //检测是否长按,在非长按时检测
-            if (!isLongClickModule) {
-                isLongClickModule = isLongPressed(xDown, yDown, motionEvent.getX(),
-                        motionEvent.getY(), motionEvent.getDownTime(), motionEvent.getEventTime(), 300);
-            }
-            if (isLongClickModule && !isLongClicking) {
-                //处理长按事件
-                isLongClicking = true;
-            }
-        } else {
-            //其他模式
+    public boolean onTouch(View v, MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                mDownX = event.getX();
+                mDownY = event.getY();
+                mDownTime = System.currentTimeMillis();
+                LogUtils.td("mDownX=" + mDownX + ", mDownY=" + mDownY + ", mDownTime=" + mDownTime);
+                break;
+            case MotionEvent.ACTION_UP:
+                mUpX = event.getX();
+                mUpY = event.getY();
+                LogUtils.td("mUpX=" + mUpX + ", mUpY=" + mUpY);
+                onCheckClick();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                onCheckLongPress(event);
+                break;
+            default:
+                break;
         }
         return true;
     }
 
-    /* 判断是否有长按动作发生
-     * @param lastX 按下时X坐标
-     * @param lastY 按下时Y坐标
-     * @param thisX 移动时X坐标
-     * @param thisY 移动时Y坐标
-     * @param lastDownTime 按下时间
-     * @param thisEventTime 移动时间
-     * @param longPressTime 判断长按时间的阀值
-     */
-    private boolean isLongPressed(float lastX, float lastY,
-                                  float thisX, float thisY,
-                                  long lastDownTime, long thisEventTime,
-                                  long longPressTime) {
-        float offsetX = Math.abs(thisX - lastX);
-        float offsetY = Math.abs(thisY - lastY);
-        long intervalTime = thisEventTime - lastDownTime;
-        if (offsetX <= 10 && offsetY <= 10 && intervalTime >= longPressTime) {
-            return true;
+    private void onCheckClick() {
+        if (mDownTime > 0) {
+            float offsetX = Math.abs(mUpX - mDownX);
+            float offsetY = Math.abs(mUpY - mDownY);
+            if (offsetX <= TOUCH_OFFSET_MIN && offsetY <= TOUCH_OFFSET_MIN) {
+                long diff = System.currentTimeMillis() - mDownTime;
+                onClickOnce(mUpX, mUpY, diff);
+            }
         }
-        return false;
+    }
+
+    private void onCheckLongPress(MotionEvent event) {
+        if (mDownTime > 0 && isLongPressed(mDownX, mDownY, event)) {
+            onLongPressed(mDownX, mDownY);
+            mDownTime = 0;
+        }
+    }
+
+    /**
+     * check if long pressed according to last down point
+     * @param xDown 按下时X坐标
+     * @param yDown 按下时Y坐标
+     * @param event 移动事件
+     */
+    private boolean isLongPressed(float xDown, float yDown, MotionEvent event) {
+        float offsetX = Math.abs(event.getX() - xDown);
+        float offsetY = Math.abs(event.getY() - yDown);
+        long interval = event.getEventTime() - event.getDownTime();  // unit by ms
+        return (offsetX <= TOUCH_OFFSET_MIN && offsetY <= TOUCH_OFFSET_MIN && interval >= LONG_PRESS_INTERVAL);
+    }
+
+    private void onLongPressed(final float x, final float y) {
+        LogUtils.td(x + ", " + y);
+    }
+
+    private void onClickOnce(final float x, final float y, final long timeDiff) {
+        LogUtils.td(x + ", " + y + ", t=" + timeDiff + ", count=" + mClickCount);
+        mClickCount ++;
+        if (mClickCount > 1) {
+            onDoubleClick(x, y);
+            mClickCount = 0;
+        } else {
+            // set timer to wait for next click, if time out, perform single click
+            getHandler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (mClickCount == 1) {
+                        onSingleClick(x, y);
+                        mClickCount = 0;
+                    }
+                }
+            }, FIRST_CLICK_TIME_OUT);
+        }
+//        getHandler().postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                if (mClickCount == 1) {
+//                    onSingleClick(x, y);
+//                } else if (mClickCount == 2) {
+//                    onDoubleClick(x, y);
+//                }
+//                mClickCount = 0;
+//            }
+//        }, FIRST_CLICK_TIME_OUT);
+    }
+
+    private void onSingleClick(final float x, final float y) {
+        LogUtils.td(x + ", " + y);
+    }
+
+    private void onDoubleClick(final float x, final float y) {
+        LogUtils.td(x + ", " + y);
+        DataLogic.inst().switchZoomMode();
     }
 
     // onTouch Handler

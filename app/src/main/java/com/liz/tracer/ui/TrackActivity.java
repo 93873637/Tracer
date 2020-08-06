@@ -160,8 +160,8 @@ public class TrackActivity extends AppCompatActivityEx {
                 ivDirection.setRotation(0);
             }
             else {
-                ivDirection.setTranslationX((int)lsp.x);
-                ivDirection.setTranslationY((int)lsp.y);
+                ivDirection.setTranslationX((int)lsp.x - ivDirection.getWidth()/2+30);
+                ivDirection.setTranslationY((int)lsp.y - ivDirection.getHeight()/2+16);
                 ivDirection.setRotation(LocationService.inst().getValidBearing());
             }
         }

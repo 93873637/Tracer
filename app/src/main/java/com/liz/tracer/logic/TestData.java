@@ -13,7 +13,7 @@ import static com.liz.androidutils.LocationUtils.createLocation;
 public class TestData {
 
     public static final int TEST_TIMER_DELAY = 200;
-    public static final int TEST_TIMER_PERIOD = 30;
+    public static final int TEST_TIMER_PERIOD = 100;
 
     private static ArrayList<Location> mTestLocationList = new ArrayList<>();
     private static int mLocationIndex = 0;
@@ -67,13 +67,13 @@ public class TestData {
 
     public static void loadTestData() {
         mTestLocationList.clear();
-        loadTestData1();
-        //loadTestData2();
+        //loadTestData1();
+        loadTestData2();
     }
 
     private static void loadTestData1() {
         loadTestData1_0();
-        //loadTestData1_1();
+        loadTestData1_1();
     }
 
     private static void loadTestData2() {

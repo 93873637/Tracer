@@ -19,8 +19,9 @@ public class MyApp extends AppEx {
 
         LogEx.setTag(ComDef.APP_NAME);
         LogEx.setLogDir("/sdcard/0.log");
-        LogEx.setSaveToFile(true);
+        LogEx.setLogFilePrefix("tracer");
         LogEx.setMaxLogFileSize(20 * 1024 * 1024);
+        LogEx.setSaveToFile(true);
 
         DataLogic.inst().init();
     }

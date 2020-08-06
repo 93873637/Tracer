@@ -14,10 +14,6 @@ public class VirtualMap {
     public static final double MAP_MIN_DISTANCE = 1.0;
     public static final double SCALE_1_TO_1 = 1.0;
 
-    public static final int ZOOM_MODE_1_TO_1 = 1;  // 1 meter : 1 pixel
-    public static final int ZOOM_MODE_FIT_SCREEN = 2;  // fit to surface screen size
-    public static final int ZOOM_MODE_DEFAULT = ZOOM_MODE_FIT_SCREEN;//###@:ZOOM_MODE_1_TO_1;
-
     final private Object mDataLock = new Object();
 
     // real point list
@@ -32,23 +28,19 @@ public class VirtualMap {
     private double Ymin = 0;
     private double Ymax = 0;
 
-    private int mZoomMode = ZOOM_MODE_DEFAULT;
-    private boolean mUserZoom = false;
+    private boolean mFitScreen = true;
 
     // start from 1, i.e. 1 meter/pixel
-    private double mUserZoomValue = SCALE_1_TO_1;
-    private double mZoomStart = mUserZoomValue;  // in case zooming recursively, recording zoom start point for every gesture zoom in/out
+    private double mZoomScale = SCALE_1_TO_1;
+    private double mZoomStart = mZoomScale;  // in case zooming recursively, recording zoom start point for every gesture zoom in/out
 
-    private double mTranslationX = 0;
-    private double mTranslationY = 0;
     private double mDistanceTotal = 0;
 
     private int mScreenWidth = 0;
     private int mScreenHeight = 0;
 
     private double mMapScale = SCALE_1_TO_1;
-    private double mMapTransX = 0;
-    private double mMapTransY = 0;
+    private TranslationVector mMapTrans = new TranslationVector();
 
     public double getDistanceTotal() {
         return mDistanceTotal;
@@ -61,13 +53,10 @@ public class VirtualMap {
     public void clearMap() {
         mMapPointList.clear();
         mDistanceTotal = 0;
-        mTranslationX = 0;
-        mTranslationY = 0;
         mScreenWidth = 0;
         mScreenHeight = 0;
         mMapScale = SCALE_1_TO_1;
-        mMapTransX = 0;
-        mMapTransY = 0;
+        mMapTrans.toZero();
     }
 
     public MapPoint getOriginPoint() {
@@ -128,18 +117,16 @@ public class VirtualMap {
      * in case zooming recursively, we need record start point for every gesture zoom in/out
      */
     public void onZoomStart() {
-        mZoomStart = mUserZoomValue;
+        mZoomStart = mZoomScale;
     }
 
     public void onUserZoom(double zoom) {
-        mUserZoomValue = mZoomStart * zoom;
-        mUserZoom = true;
-        LogUtils.td("mUserZoomValue=" + mUserZoomValue);
+        mZoomScale = mZoomStart * zoom;
+        LogUtils.td("mZoomScale=" + mZoomScale);
     }
 
     public void onUserTranslation(double dx, double dy) {
-        mTranslationX += dx;
-        mTranslationY -= dy;
+        LogUtils.trace();
     }
 
     public String getScreenSize() {
@@ -153,26 +140,15 @@ public class VirtualMap {
             lastPosInfo = (int) lsp.x + "/" + (int) lsp.y;
         }
         return LocationUtils.formatDistance(getMapWidth()) + "m/" + LocationUtils.formatDistance(getMapHeight()) + "m"
-                + "\n" + new DecimalFormat("#0.00").format(mUserZoomValue) + "/" + new DecimalFormat("#0.00").format(mMapScale)
-                + "\n" + (int)mTranslationX + "/" + (int)mTranslationY
-                + "\n" + (int)mMapTransX + "/" + (int)mMapTransY
+                + "\n" + new DecimalFormat("#0.00").format(mZoomScale) + "/" + new DecimalFormat("#0.00").format(mMapScale)
                 + "\n" + getScreenSize()
+                + "\n" + mMapTrans.toString()
                 + "\n" + lastPosInfo
                 ;
     }
 
     public void switchZoomMode() {
-        if (mUserZoom) {
-            // close user zoom, make zoom mode take effect
-            mUserZoom = false;
-        } else {
-            // switch between 1to1 and fit screen
-            if (mZoomMode == ZOOM_MODE_1_TO_1) {
-                mZoomMode = ZOOM_MODE_FIT_SCREEN;
-            } else {
-                mZoomMode = ZOOM_MODE_1_TO_1;
-            }
-        }
+        mFitScreen = !mFitScreen;
     }
 
     /**
@@ -187,31 +163,23 @@ public class VirtualMap {
         mScreenHeight = screenHeight;
         LogUtils.td("screen W/H=" + screenWidth + "/" + screenHeight);
 
-        mMapScale = mUserZoomValue;
-        mMapTransX = mTranslationX;
-        mMapTransY = mTranslationY;
-        switch(mZoomMode) {
-            case ZOOM_MODE_1_TO_1:
-                mMapScale = SCALE_1_TO_1;
-                autoTranslation();
-                break;
-            case ZOOM_MODE_FIT_SCREEN:
-                scaleToScreen();
-                mMapTransX -= (Xmin * mMapScale);
-                mMapTransY -= (Ymin * mMapScale);
-                break;
-            default:
-                break;
+        if (mFitScreen) {
+            mMapScale = calcScaleToScreen();
+            mMapTrans.x = - Xmin * mMapScale;
+            mMapTrans.y = - Ymin * mMapScale;
         }
-        LogUtils.td("translation X/Y=" + String.format("%.2f", mTranslationX) + "/" + String.format("%.2f", mTranslationY)
-                + ", mMapScale=" + String.format("%.2f", mMapScale));
+        else {
+            mMapScale = mZoomScale;
+            autoAdjustTranslation();
+        }
+        LogUtils.td(", mMapScale=" + String.format("%.2f", mMapScale) + "mMapTransX/Y=" + mMapTrans.toString());
 
         synchronized (mDataLock) {
             mSurfacePointList.clear();
             for (MapPoint mp : mMapPointList) {
                 MapPoint mpSurface = mp.duplicate();
                 mpSurface.zoom(mMapScale);
-                mpSurface.translation(mMapTransX, mMapTransY);
+                mpSurface.translation(mMapTrans);
                 mSurfacePointList.add(mpSurface);
             }
         }
@@ -228,7 +196,7 @@ public class VirtualMap {
         }
     }
 
-    public void scaleToScreen() {
+    public double calcScaleToScreen() {
         double mapWidth = this.getMapWidth();
         double mapHeight = this.getMapHeight();
         if (mapWidth < MAP_MIN_DISTANCE) {
@@ -239,46 +207,54 @@ public class VirtualMap {
         }
         double sx = mScreenWidth / mapWidth;
         double sy = mScreenHeight / mapHeight;
-        mMapScale = Math.min(sx, sy);
+        double s = Math.min(sx, sy);
         LogUtils.td("screen W/H=" + mScreenWidth + "/" + mScreenHeight
                 + ", map W/H=" + String.format("%.1f", getMapWidth()) + "/" + String.format("%.1f", getMapHeight())
-                + ", sx/sy/s=" + String.format("%.1f", sx) + "/" + String.format("%.1f", sy) + "/" + String.format("%.1f", mMapScale)
+                + ", sx/sy/s=" + String.format("%.1f", sx) + "/" + String.format("%.1f", sy) + "/" + String.format("%.1f", s)
         );
+        return s;
     }
 
     /**
      * update translation X, Y automatically
-     * if last point move out of screen, translation last point to center
+     * first simulate last point's transform, if last point move out of screen, adjust translation
      */
-    private void autoTranslation() {
+    private void autoAdjustTranslation() {
         MapPoint lp = getLastPoint();
-        if (lp != null) {
-            MapPoint lpd = lp.duplicate();
-            lpd.zoom(mMapScale);
-            lpd.translation(mTranslationX, mTranslationY);
-            LogUtils.td("lpd.translation=" + String.format("%.1f", lpd.x) + "/" + String.format("%.1f", lpd.y));
-
-            if (lpd.x <= 0) {
-                LogUtils.td("last point X out of left");
-                mTranslationX += mScreenWidth;
-                mTranslationX -= lpd.x;
-            }
-            if (lpd.x > mScreenWidth) {
-                LogUtils.td("last point X out of right");
-                //mTranslationX -= mScreenWidth;
-                mTranslationX -= lpd.x;
-            }
-            if (lpd.y <= 0) {
-                LogUtils.td("last point Y out of top");
-                mTranslationY += mScreenHeight;
-                mTranslationY -= lpd.y;
-            }
-            if (lpd.y > mScreenHeight) {
-                LogUtils.td("last point Y out of bottom");
-                //mTranslationY -= mScreenHeight;
-                mTranslationY -= lpd.y;
-            }
+        if (lp == null) {
+            return;
         }
-        LogUtils.td("trans by last point=" + String.format("%.1f", mTranslationX) + ", mTranslationY=" + String.format("%.1f", mTranslationY));
+
+        // simulate last point's transform
+        MapPoint lpd0 = lp.duplicate();
+        lpd0.zoom(mMapScale);
+        LogUtils.td("lpd0=" + lpd0.toString());
+
+        MapPoint lpd1 = lpd0.duplicate();
+        lpd1.translation(mMapTrans);
+        LogUtils.td("lpd1=" + lpd1.toString());
+
+        if (lpd1.x < 0) {
+            LogUtils.td("last point X out of left");
+            mMapTrans.x = -lpd0.x + mScreenWidth*0.5;
+        }
+        if (lpd1.x > mScreenWidth) {
+            LogUtils.td("last point X out of right");
+            mMapTrans.x = -lpd0.x + mScreenWidth*0.5;
+        }
+        if (lpd1.y < 0) {
+            LogUtils.td("last point Y out of top");
+            mMapTrans.y = -lpd0.y + mScreenHeight*0.5;
+        }
+        if (lpd1.y > mScreenHeight) {
+            LogUtils.td("last point Y out of bottom");
+            mMapTrans.y = -lpd0.y + mScreenHeight*0.5;
+        }
+
+        MapPoint lpd2 = lpd0.duplicate();
+        lpd2.translation(mMapTrans);
+        LogUtils.td("lpd2=" + lpd2.toString());
+
+        LogUtils.td("trans by last point=" + mMapTrans.toString());
     }
 }

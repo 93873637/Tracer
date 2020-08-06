@@ -56,9 +56,17 @@ public class MapPoint {
         return this;
     }
 
+    public MapPoint translation(TranslationVector t) {
+        return translation(t.x, t.y);
+    }
+
     public MapPoint translation(double dx, double dy) {
         this.x += dx;
         this.y += dy;
         return this;
+    }
+
+    public String toString() {
+        return String.format("%.1f", this.x) + "/" + String.format("%.1f", this.y);
     }
 }
