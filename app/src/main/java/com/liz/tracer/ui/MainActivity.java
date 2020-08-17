@@ -27,8 +27,8 @@ import com.liz.androidutils.ui.FlingActionRight;
 import com.liz.tracer.R;
 import com.liz.tracer.app.MyApp;
 import com.liz.tracer.logic.ComDef;
-import com.liz.tracer.logic.DataLogic;
 import com.liz.tracer.logic.LocationService;
+import com.liz.tracer.logic.TestData;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivityEx {
         addFlingAction(new FlingActionRight(new FlingAction.FlingCallback() {
             @Override
             public void onFlingAction(FlingAction flingAction) {
-                Intent intent = new Intent(MainActivity.this, TrackActivity.class);
+                Intent intent = new Intent(MainActivity.this, Track2Activity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(intent);
             }
@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivityEx {
                     public void onPermissionGranted() {
                         LogEx.trace();
                         LocationService.inst().init(MainActivity.this);
-                        LocationService.inst().setLocationCallback(new LocationService.LocationCallback() {
+                        LocationService.inst().addLocationCallback(new LocationService.LocationCallback() {
                             @Override
                             public void onLocationUpdate() {
                                 MainActivity.this.runOnUiThread(new Runnable() {
@@ -331,10 +331,19 @@ public class MainActivity extends AppCompatActivityEx {
                 //Toast.makeText(getApplicationContext(), item.getTitle(), Toast.LENGTH_SHORT).show();
                 switch(item.getItemId()) {
                     case R.id.action_test_mode_track:
-                        DataLogic.startTestModeTrack();
+                        TestData.setTestMode(ComDef.TEST_MODE_TRACKING);
+                        TestData.loadTestData();
+                        TestData.setReverseLoad(false);
                         return true;
-                    case R.id.action_test_mode_load:
-                        DataLogic.startTestModeLoad();
+                    case R.id.action_test_mode_track_reverse:
+                        TestData.setTestMode(ComDef.TEST_MODE_TRACKING);
+                        TestData.loadTestData();
+                        TestData.setReverseLoad(true);
+                        return true;
+                    case R.id.action_test_mode_load_all:
+                        TestData.setTestMode(ComDef.TEST_MODE_LOAD_ALL);
+                        TestData.loadTestData();
+                        TestData.setReverseLoad(false);
                         return true;
                     default:
                         break;

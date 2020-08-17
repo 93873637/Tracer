@@ -18,6 +18,7 @@ import com.liz.tracer.app.MyApp;
 import com.liz.tracer.logic.ComDef;
 import com.liz.tracer.logic.DataLogic;
 import com.liz.tracer.logic.LocationService;
+import com.liz.tracer.logic.TestData;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -100,10 +101,19 @@ public class TracerActivity extends AppCompatActivityEx {
         tvDuration = findViewById(R.id.text_duration);
         tvMaxSpeed = findViewById(R.id.text_max_speed);
 
-        setUITimer(UI_TIMER_DELAY, UI_TIMER_PERIOD);
-
         mCurrentBearing = LocationService.inst().getBearing();
         ivOrientation.setRotation(mCurrentBearing);
+
+        LocationService.inst().addLocationCallback(new LocationService.LocationCallback() {
+            @Override
+            public void onLocationUpdate() {
+                TracerActivity.this.runOnUiThread(new Runnable() {
+                    public void run() {
+                        updateUI();
+                    }
+                });
+            }
+        });
 
         //##@:
         //mCurrentBearing = LocationService.inst().getBearing();
@@ -253,7 +263,7 @@ public class TracerActivity extends AppCompatActivityEx {
         tvTimeStart.setText(LocationService.inst().getStartTimeText());
         tvTimeElapsed.setText(LocationService.inst().getDurationTextFormat());
 
-        if (DataLogic.testSpeedBearing()) {
+        if (TestData.testSpeedBearing()) {
             testUpdateBearing();
             testSpeed += TEST_SPEED_INC;
             setSpeedView(tvCurrentSpeed, testSpeed);

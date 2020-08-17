@@ -4,6 +4,7 @@ import android.location.Location;
 
 import com.liz.androidutils.LocationUtils;
 import com.liz.androidutils.LogUtils;
+import com.liz.androidutils.NumUtils;
 
 public class MapPoint {
 
@@ -30,8 +31,8 @@ public class MapPoint {
             double a = LocationUtils.getAngle(org.loc, loc) * Math.PI / 180;
             this.x = d * Math.sin(a);
             this.y = -d * Math.cos(a);
-            LogUtils.td("d=" + String.format("%.1f", d) + ", a=" + String.format("%.1f", a)
-                    + ", x=" + String.format("%.1f", x) + ", y=" + String.format("%.1f", y));
+            LogUtils.td("d=" + NumUtils.format(d, 1) + ", a=" + NumUtils.format(a, 1)
+                    + ", x=" + NumUtils.format(x, 1) + ", y=" + NumUtils.format(y, 1));
         }
     }
 
@@ -67,6 +68,6 @@ public class MapPoint {
     }
 
     public String toString() {
-        return String.format("%.1f", this.x) + "/" + String.format("%.1f", this.y);
+        return NumUtils.format(x, 1) + "/" + NumUtils.format(y, 1);
     }
 }

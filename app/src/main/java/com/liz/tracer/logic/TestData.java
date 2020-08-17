@@ -18,21 +18,46 @@ public class TestData {
     private static ArrayList<Location> mTestLocationList = new ArrayList<>();
     private static int mLocationIndex = 0;
     private static Timer mTestTimer = null;
+    private static boolean mReverseLoad = false;
 
-    public static void startTestTrack() {
+    public static int mTestMode = ComDef.TEST_MODE_NONE;
+
+    public static void setTestMode(int mode) {
+        mTestMode = mode;
+    }
+
+    public static boolean testTrack() {
+        return mTestMode == ComDef.TEST_MODE_TRACKING;
+    }
+
+    public static boolean testLoadAll() {
+        return mTestMode == ComDef.TEST_MODE_LOAD_ALL;
+    }
+
+    public static boolean testSpeedBearing() {
+        return mTestMode == ComDef.TEST_MODE_SPEED_BEARING;
+    }
+
+    public static boolean isTestMode() {
+        return mTestMode != ComDef.TEST_MODE_NONE;
+    }
+
+    public static void setReverseLoad(boolean reverse) {
+        mReverseLoad = reverse;
+    }
+
+    public static void startTestTracking() {
         mTestTimer = new Timer();
         mTestTimer.schedule(new TimerTask() {
             public void run() {
                 if (mLocationIndex < mTestLocationList.size()) {
-                    ///*
-                    LocationService.inst().onLocationChanged(mTestLocationList.get(mLocationIndex));
+                    if (mReverseLoad) {
+                        LocationService.inst().onLocationChanged(mTestLocationList.get(mTestLocationList.size() - mLocationIndex - 1));
+                    }
+                    else {
+                        LocationService.inst().onLocationChanged(mTestLocationList.get(mLocationIndex));
+                    }
                     mLocationIndex ++;
-                    //*/
-                    /*
-                    mLocationIndex ++;
-                    LocationService.inst().onLocationChanged(mTestLocationList.get(mTestLocationList.size() - mLocationIndex));
-                    //*/
-
                     LogUtils.td("load location " + mLocationIndex + "/" + mTestLocationList.size());
                 }
                 else {
@@ -42,14 +67,14 @@ public class TestData {
         }, TEST_TIMER_DELAY, TEST_TIMER_PERIOD);
     }
 
-    public static void startTestLoad() {
+    public static void startTestLoadAll() {
         new Thread() {
             public void run() {
+                LogUtils.td("load all locations, size =  " + mTestLocationList.size());
                 for (Location loc : mTestLocationList) {
-                    LogUtils.td("load location " + mLocationIndex + "/" + mTestLocationList.size());
-                    LocationService.inst().onLocationChanged(mTestLocationList.get(mLocationIndex));
-                    mLocationIndex++;
+                    LocationService.inst().onLocationChanged(loc);
                 }
+                mLocationIndex = mTestLocationList.size();
             }
         }.start();
     }

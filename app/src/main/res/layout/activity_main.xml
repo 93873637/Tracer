@@ -263,6 +263,6 @@
             android:scrollbars="vertical"
             android:singleLine="false"
             android:textIsSelectable="true"
-            android:textSize="12sp" />
+            android:textSize="12sp"/>
     </ScrollView>
 </LinearLayout>

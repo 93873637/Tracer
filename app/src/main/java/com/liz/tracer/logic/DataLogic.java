@@ -8,24 +8,6 @@ import com.liz.androidutils.AssertUtils;
 
 public class DataLogic extends VirtualMap {
 
-    public static int mTestMode = ComDef.TEST_MODE_NONE;
-
-    public static boolean testTrack() {
-        return mTestMode == ComDef.TEST_MODE_TRACK;
-    }
-
-    public static boolean testLoad() {
-        return mTestMode == ComDef.TEST_MODE_LOAD;
-    }
-
-    public static boolean testSpeedBearing() {
-        return mTestMode == ComDef.TEST_MODE_SPEED_BEARING;
-    }
-
-    public static boolean isTestMode() {
-        return mTestMode != ComDef.TEST_MODE_NONE;
-    }
-
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // singleton
 
@@ -43,23 +25,13 @@ public class DataLogic extends VirtualMap {
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // static interface
 
-    public static void startTestModeTrack() {
-        mTestMode = ComDef.TEST_MODE_TRACK;
-        TestData.loadTestData();
-    }
-
-    public static void startTestModeLoad() {
-        mTestMode = ComDef.TEST_MODE_LOAD;
-        TestData.loadTestData();
-    }
-
     public static int getSpeedBarColor(double speed) {
         for (SpeedColor sc : ComDef.SPEED_BAR_COLORS) {
             if (speed < sc.speed) {
                 return sc.color;
             }
         }
-        return Color.WHITE;
+        return ComDef.FINAL_SPEED_COLOR;
     }
 
     private static double SPEED_MAX_FOR_COLOR = 50/3.6;  // unit by m/s
@@ -74,6 +46,13 @@ public class DataLogic extends VirtualMap {
     }
 
     public static int getColorByRatio(double ratio) {
+        int r = (int)(255 * ratio);
+        int g = (int)(255 * (1 - ratio));
+        int b = 0;
+        return Color.rgb(r, g, b);
+    }
+
+    public static int getColorByRatio0(double ratio) {
         int r = (int)(255 * ratio);
         int g = (int)(255 * (1 - ratio));
         int b = (int)(255 * (1 - ratio));

@@ -19,10 +19,12 @@ public class ComDef {
             new SpeedColor( 100.0/3.6, 0xffff7700),
             new SpeedColor( 150.0/3.6, 0xff0000ff),
             new SpeedColor( 200.0/3.6, 0xffff77ff),
-            new SpeedColor( 300.0/3.6, 0xffffff77),
-            new SpeedColor( 500.0/3.6, 0xff88ffff),
-            new SpeedColor(1000.0/3.6, 0xffffffff),
+            new SpeedColor( 300.0/3.6, 0xff77ff77),
+            new SpeedColor( 500.0/3.6, 0xff99ffff),
+            new SpeedColor(1000.0/3.6, 0xffe0e0ff),
     };
+
+    public static final int FINAL_SPEED_COLOR = 0xffffff00;
 
     public static final int SPEED_WIDTH_BASE = 8;    // base speed with for color show
 
@@ -36,8 +38,8 @@ public class ComDef {
     public static final boolean BEARING_ANIMATION = true;
 
     public static final int TEST_MODE_NONE = 0;
-    public static final int TEST_MODE_TRACK = 1;
-    public static final int TEST_MODE_LOAD = 2;
+    public static final int TEST_MODE_TRACKING = 1;
+    public static final int TEST_MODE_LOAD_ALL = 2;
     public static final int TEST_MODE_SPEED_BEARING = 3;
 
     public static final int TRACK_LINE_COLOR = Color.rgb(255, 255, 255);

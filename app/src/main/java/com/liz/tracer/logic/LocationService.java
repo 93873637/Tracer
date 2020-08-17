@@ -15,7 +15,11 @@ import androidx.core.app.ActivityCompat;
 import com.liz.androidutils.LocationUtils;
 import com.liz.androidutils.LogEx;
 import com.liz.androidutils.LogUtils;
+import com.liz.androidutils.NumUtils;
+import com.liz.androidutils.SoundUtils;
 import com.liz.androidutils.TimeUtils;
+import com.liz.tracer.R;
+import com.liz.tracer.app.MyApp;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +47,7 @@ public class LocationService {
 
     private LocationManager mLocationManager = null;
     private String mLocationProvider = "";
-    private LocationCallback mCallback;
+    private ArrayList<LocationCallback> mCallbackList = new ArrayList<>();
 
     // running parameters
     private ArrayList<Location> mLocationList = new ArrayList<>();  // list of locations on change
@@ -89,8 +93,8 @@ public class LocationService {
         }
     }
 
-    public void setLocationCallback(LocationCallback callback) {
-        mCallback = callback;
+    public void addLocationCallback(LocationCallback callback) {
+        mCallbackList.add(callback);
     }
 
     public void release() {
@@ -191,7 +195,7 @@ public class LocationService {
     }
 
     public String getMaxSpeedText() {
-        return LocationUtils.getDualSpeedText(getMaxSpeed()) + "/" + String.format("%.1f", getMaxSpeedAccuracy());
+        return LocationUtils.getDualSpeedText(getMaxSpeed()) + "/" + NumUtils.format(getMaxSpeedAccuracy(), 1);
     }
 
     public String getMaxDualSpeedText() {
@@ -296,7 +300,7 @@ public class LocationService {
         if (location == null) {
             return "location null";
         } else {
-            return location.toString();
+            return LocationUtils.getString(location);
         }
     }
 
@@ -336,11 +340,11 @@ public class LocationService {
             mIsRunning = true;
             resetRunningParameters();
             mTimeStart = System.currentTimeMillis();
-            if (DataLogic.testTrack()) {
-                TestData.startTestTrack();
+            if (TestData.testTrack()) {
+                TestData.startTestTracking();
             }
-            else if (DataLogic.testLoad()) {
-                TestData.startTestLoad();
+            else if (TestData.testLoadAll()) {
+                TestData.startTestLoadAll();
             }
             else {
                 mLocationManager.requestLocationUpdates(mLocationProvider, LOCATION_UPDATE_MIN_TIME, LOCATION_UPDATE_MIN_DISTANCE, mLocationListener);
@@ -354,7 +358,7 @@ public class LocationService {
             LogUtils.td("already stopped");
         }
         else {
-            if (DataLogic.isTestMode()) {
+            if (TestData.isTestMode()) {
                 TestData.stopTest();
             }
             else {
@@ -417,15 +421,16 @@ public class LocationService {
 
         if (mLocationMax == null || newLocation.getSpeed() > mLocationMax.getSpeed()) {
             mLocationMax = newLocation;
+            SoundUtils.beep(MyApp.getAppContext(), R.raw.beep);
         }
 
-        if (!DataLogic.testTrack()) {
+        if (!TestData.isTestMode()) {
             // save location info to log file
             LogEx.i(getLastLocationInfo());
         }
 
-        if (mCallback != null) {
-            mCallback.onLocationUpdate();
+        for (LocationCallback callback : mCallbackList) {
+            callback.onLocationUpdate();
         }
     }
 

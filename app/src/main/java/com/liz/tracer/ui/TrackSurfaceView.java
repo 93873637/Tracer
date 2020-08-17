@@ -18,6 +18,8 @@ import com.liz.tracer.logic.MapPoint;
 
 import java.util.List;
 
+import static android.view.MotionEvent.ACTION_MOVE;
+
 
 public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callback
         , View.OnTouchListener {
@@ -93,15 +95,23 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
     private float mDownX, mDownY;
     private float mUpX, mUpY;
+    private float mMoveStartX, mMoveStartY;
     private long mDownTime = 0;
     private int mClickCount = 0;
+    private double mStartDistance = 0;
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+        if (checkZoom(event)) {
+            LogUtils.td("action zoom");
+            return true;
+        }
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 mDownX = event.getX();
                 mDownY = event.getY();
+                mMoveStartX = event.getX();
+                mMoveStartY = event.getY();
                 mDownTime = System.currentTimeMillis();
                 LogUtils.td("mDownX=" + mDownX + ", mDownY=" + mDownY + ", mDownTime=" + mDownTime);
                 break;
@@ -109,10 +119,17 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
                 mUpX = event.getX();
                 mUpY = event.getY();
                 LogUtils.td("mUpX=" + mUpX + ", mUpY=" + mUpY);
-                onCheckClick();
+                if (checkClick()) {
+                    return true;
+                }
                 break;
             case MotionEvent.ACTION_MOVE:
-                onCheckLongPress(event);
+                if (checkLongPress(event)) {
+                    return true;
+                }
+                else if (checkMoving(event)) {
+                    return true;
+                }
                 break;
             default:
                 break;
@@ -120,22 +137,49 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         return true;
     }
 
-    private void onCheckClick() {
-        if (mDownTime > 0) {
-            float offsetX = Math.abs(mUpX - mDownX);
-            float offsetY = Math.abs(mUpY - mDownY);
-            if (offsetX <= TOUCH_OFFSET_MIN && offsetY <= TOUCH_OFFSET_MIN) {
-                long diff = System.currentTimeMillis() - mDownTime;
-                onClickOnce(mUpX, mUpY, diff);
-            }
+    /**
+     * 通过两个手指开始距离和结束距离，来判断放大缩小
+     *
+     * @param event:
+     * @return true if zoom action
+     */
+    public boolean checkZoom(MotionEvent event) {
+        LogUtils.td("event=" + event.toString());
+        int nCnt = event.getPointerCount();
+        if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_POINTER_DOWN && 2 == nCnt) {
+            double dx = Math.abs(event.getX(0) - event.getX(1));
+            double dy = Math.abs(event.getY(0) - event.getY(1));
+            mStartDistance = Math.sqrt(dx * dx + dy * dy);
+            onZoomStart();
+            return true;
+        } else if ((event.getAction() & MotionEvent.ACTION_MASK) == ACTION_MOVE && 2 == nCnt) {
+            double dx = Math.abs(event.getX(0) - event.getX(1));
+            double dy = Math.abs(event.getY(0) - event.getY(1));
+            double d = Math.sqrt(dx * dx + dy * dy);
+            onZoom(d / mStartDistance);
+            return true;
+        }
+        else {
+            return false;
         }
     }
 
-    private void onCheckLongPress(MotionEvent event) {
+    public void onZoomStart() {
+        DataLogic.inst().onZoomStart();
+    }
+
+    public void onZoom(double zoom) {
+        DataLogic.inst().onUserZoom(zoom);
+        updateTrackSurface();
+    }
+
+    private boolean checkLongPress(MotionEvent event) {
         if (mDownTime > 0 && isLongPressed(mDownX, mDownY, event)) {
             onLongPressed(mDownX, mDownY);
             mDownTime = 0;
+            return true;
         }
+        return false;
     }
 
     /**
@@ -153,6 +197,19 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
     private void onLongPressed(final float x, final float y) {
         LogUtils.td(x + ", " + y);
+    }
+
+    private boolean checkClick() {
+        if (mDownTime > 0) {
+            float offsetX = Math.abs(mUpX - mDownX);
+            float offsetY = Math.abs(mUpY - mDownY);
+            if (offsetX <= TOUCH_OFFSET_MIN && offsetY <= TOUCH_OFFSET_MIN) {
+                long diff = System.currentTimeMillis() - mDownTime;
+                onClickOnce(mUpX, mUpY, diff);
+                return true;
+            }
+        }
+        return false;
     }
 
     private void onClickOnce(final float x, final float y, final long timeDiff) {
@@ -173,17 +230,6 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
                 }
             }, FIRST_CLICK_TIME_OUT);
         }
-//        getHandler().postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                if (mClickCount == 1) {
-//                    onSingleClick(x, y);
-//                } else if (mClickCount == 2) {
-//                    onDoubleClick(x, y);
-//                }
-//                mClickCount = 0;
-//            }
-//        }, FIRST_CLICK_TIME_OUT);
     }
 
     private void onSingleClick(final float x, final float y) {
@@ -193,6 +239,22 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
     private void onDoubleClick(final float x, final float y) {
         LogUtils.td(x + ", " + y);
         DataLogic.inst().switchZoomMode();
+    }
+
+    public boolean checkMoving(MotionEvent event) {
+        float moveEndX = event.getX();
+        float moveEndY = event.getY();
+        float dx = moveEndX - mMoveStartX;
+        float dy = moveEndY - mMoveStartY;
+        onMoving(dx, dy);
+        mMoveStartX = moveEndX;
+        mMoveStartY = moveEndY;
+        return true;
+    }
+
+    private void onMoving(double dx, double dy) {
+        DataLogic.inst().onUserTranslation(dx, dy);
+        updateTrackSurface();
     }
 
     // onTouch Handler

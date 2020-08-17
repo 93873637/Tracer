@@ -7,7 +7,12 @@
         android:title="Test Mode Track"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_test_mode_load"
+        android:id="@+id/action_test_mode_track_reverse"
+        android:orderInCategory="100"
+        android:title="Test Mode Track Reverse"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_test_mode_load_all"
         android:orderInCategory="100"
         android:title="Test Mode Load"
         app:showAsAction="never" />

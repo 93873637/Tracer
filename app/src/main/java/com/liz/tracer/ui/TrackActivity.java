@@ -19,6 +19,7 @@ import com.liz.tracer.logic.ComDef;
 import com.liz.tracer.logic.DataLogic;
 import com.liz.tracer.logic.LocationService;
 import com.liz.tracer.logic.MapPoint;
+import com.liz.tracer.logic.TestData;
 
 public class TrackActivity extends AppCompatActivityEx {
 
@@ -41,7 +42,6 @@ public class TrackActivity extends AppCompatActivityEx {
     private TextView tvAverageSpeedInfo;
 
     private TextView tvTotalDistance;
-    private TextView tvDuration;
     private TextView tvMaxSpeed;
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -78,7 +78,7 @@ public class TrackActivity extends AppCompatActivityEx {
         addFlingAction(new FlingActionLeft(new FlingAction.FlingCallback() {
             @Override
             public void onFlingAction(FlingAction flingAction) {
-                Intent intent = new Intent(TrackActivity.this, MainActivity.class);
+                Intent intent = new Intent(TrackActivity.this, Track2Activity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(intent);
             }
@@ -100,10 +100,18 @@ public class TrackActivity extends AppCompatActivityEx {
         tvAverageSpeedInfo = findViewById(R.id.text_average_speed_info);
 
         tvTotalDistance = findViewById(R.id.text_total_distance);
-        tvDuration = findViewById(R.id.text_duration);
         tvMaxSpeed = findViewById(R.id.text_max_speed);
 
-        setUITimer(UI_TIMER_DELAY, UI_TIMER_PERIOD);
+        LocationService.inst().addLocationCallback(new LocationService.LocationCallback() {
+            @Override
+            public void onLocationUpdate() {
+                TrackActivity.this.runOnUiThread(new Runnable() {
+                    public void run() {
+                        updateUI();
+                    }
+                });
+            }
+        });
     }
 
     private int getSpeedWidth(double ratio) {
@@ -121,32 +129,6 @@ public class TrackActivity extends AppCompatActivityEx {
         tv.setBackgroundColor(DataLogic.getSpeedBarColor(speed));
     }
 
-    //#####@:DIU:
-//    @Override
-//    public void onZoomStart() {
-//        DataLogic.inst().onZoomStart();
-//    }
-//
-//    @Override
-//    public void onZoom(double zoom) {
-//        LogUtils.td("zoom=" + zoom);
-//        DataLogic.inst().onUserZoom(zoom);
-//        mTrackSurface.updateTrackSurface();
-//    }
-//
-//    @Override
-//    public void onMove(Point p1, Point p2, float dx, float dy, float d, float b) {
-//        LogUtils.td("dx=" + dx + ", dy=" + dy + ", d=" + d + ", b=" + b);
-//        DataLogic.inst().onUserTranslation(dx, dy);
-//        mTrackSurface.updateTrackSurface();
-//    }
-//
-//    @Override
-//    protected void onDoubleClick() {
-//        LogUtils.trace();
-//        DataLogic.inst().switchZoomMode();
-//        mTrackSurface.updateTrackSurface();
-//    }
 
     protected void updateDirectionIcon() {
         if (!LocationService.inst().isRunning()) {
@@ -160,8 +142,8 @@ public class TrackActivity extends AppCompatActivityEx {
                 ivDirection.setRotation(0);
             }
             else {
-                ivDirection.setTranslationX((int)lsp.x - ivDirection.getWidth()/2+30);
-                ivDirection.setTranslationY((int)lsp.y - ivDirection.getHeight()/2+16);
+                ivDirection.setTranslationX((int) lsp.x - ivDirection.getWidth() / 2 + 30);
+                ivDirection.setTranslationY((int) lsp.y - ivDirection.getHeight() / 2 + 16);
                 ivDirection.setRotation(LocationService.inst().getValidBearing());
             }
         }
@@ -178,16 +160,21 @@ public class TrackActivity extends AppCompatActivityEx {
         tvMapInfo.setText(DataLogic.inst().getMapInfo());
         updateDirectionIcon();
 
-        if (DataLogic.isTestMode()) {
+        if (TestData.isTestMode()) {
             tvTestInfo.setVisibility(View.VISIBLE);
             tvTestInfo.setText(DataLogic.inst().getTestInfo());
-            if (DataLogic.testSpeedBearing()) {
+            if (TestData.testSpeedBearing()) {
                 testSpeed += TEST_SPEED_INC;
-                tvTestInfo.setVisibility(View.INVISIBLE);
                 setSpeedView(tvCurrentSpeed, testSpeed);
                 setSpeedView(tvAverageSpeed, testSpeed);
                 tvCurrentSpeedInfo.setText(LocationUtils.getDualSpeedText(testSpeed));
                 tvAverageSpeedInfo.setText(LocationUtils.getDualSpeedText(testSpeed));
+            }
+            else {
+                setSpeedView(tvCurrentSpeed, LocationService.inst().getCurrentSpeed());
+                setSpeedView(tvAverageSpeed, LocationService.inst().getAverageSpeed());
+                tvCurrentSpeedInfo.setText(LocationService.inst().getCurrentSpeedText());
+                tvAverageSpeedInfo.setText(LocationService.inst().getAverageSpeedText());
             }
         } else {
             tvTestInfo.setVisibility(View.INVISIBLE);
@@ -198,7 +185,6 @@ public class TrackActivity extends AppCompatActivityEx {
         }
 
         tvTotalDistance.setText(DataLogic.inst().getDistanceTotalText());
-        tvDuration.setText(LocationService.inst().getDurationText());
-        tvMaxSpeed.setText(LocationService.inst().getMaxDualSpeedText());
+        tvMaxSpeed.setText(LocationService.inst().getMaxSpeedText());
     }
 }
