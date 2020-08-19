@@ -1,6 +1,5 @@
 package com.liz.tracer.ui;
 
-import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.widget.ImageView;
@@ -9,12 +8,7 @@ import android.widget.TextView;
 import com.liz.androidutils.LocationUtils;
 import com.liz.androidutils.LogUtils;
 import com.liz.androidutils.TimeUtils;
-import com.liz.androidutils.ui.AppCompatActivityEx;
-import com.liz.androidutils.ui.FlingAction;
-import com.liz.androidutils.ui.FlingActionLeft;
-import com.liz.androidutils.ui.FlingActionRight;
 import com.liz.tracer.R;
-import com.liz.tracer.app.MyApp;
 import com.liz.tracer.logic.ComDef;
 import com.liz.tracer.logic.DataLogic;
 import com.liz.tracer.logic.LocationService;
@@ -23,7 +17,7 @@ import com.liz.tracer.logic.TestData;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class TracerActivity extends AppCompatActivityEx {
+public class TracerDataActivity extends TracerBaseActivity {
 
     private static final int UI_TIMER_DELAY = 200;
     private static final int UI_TIMER_PERIOD = 1000;
@@ -59,30 +53,9 @@ public class TracerActivity extends AppCompatActivityEx {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setProp(PROP_NO_TITLE);
-        setProp(PROP_KEEP_SCREEN_ON);
-        setContentView(R.layout.activity_tracer);
-
-        LogUtils.trace();
-        MyApp.registerActivity(this);
+        setContentView(R.layout.activity_tracer_data);
 
         addFlingView(findViewById(R.id.ll_tracer_main));
-        addFlingAction(new FlingActionRight(new FlingAction.FlingCallback() {
-            @Override
-            public void onFlingAction(FlingAction flingAction) {
-                Intent intent = new Intent(TracerActivity.this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                startActivity(intent);
-            }
-        }));
-        addFlingAction(new FlingActionLeft(new FlingAction.FlingCallback() {
-            @Override
-            public void onFlingAction(FlingAction flingAction) {
-                Intent intent = new Intent(TracerActivity.this, TrackActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                startActivity(intent);
-            }
-        }));
 
         tvTimeCurrent = findViewById(R.id.text_current_time);
         tvTimeStart = findViewById(R.id.text_start_time);
@@ -107,7 +80,7 @@ public class TracerActivity extends AppCompatActivityEx {
         LocationService.inst().addLocationCallback(new LocationService.LocationCallback() {
             @Override
             public void onLocationUpdate() {
-                TracerActivity.this.runOnUiThread(new Runnable() {
+                TracerDataActivity.this.runOnUiThread(new Runnable() {
                     public void run() {
                         updateUI();
                     }
@@ -182,7 +155,7 @@ public class TracerActivity extends AppCompatActivityEx {
         mBearingTimer = new Timer();
         mBearingTimer.schedule(new TimerTask() {
             public void run() {
-                TracerActivity.this.runOnUiThread(new Runnable() {
+                TracerDataActivity.this.runOnUiThread(new Runnable() {
                     public void run() {
                         mCurrentBearing += timerInc;
                         if (mCurrentBearing < BEARING_MIN) {

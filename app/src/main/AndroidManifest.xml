@@ -25,9 +25,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.TracerActivity" android:screenOrientation="portrait"/>
-        <activity android:name=".ui.TrackActivity" android:screenOrientation="portrait"/>
-        <activity android:name=".ui.Track2Activity" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.TracerMainActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.TracerDataActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.TrackBlackActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.TrackWhiteActivity" android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

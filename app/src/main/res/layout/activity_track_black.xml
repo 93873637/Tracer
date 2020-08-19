@@ -4,7 +4,7 @@
     android:id="@+id/ll_track_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.TrackActivity"
+    tools:context=".ui.TrackBlackActivity"
     android:background="#000033"
     android:orientation="vertical">
 
@@ -77,12 +77,6 @@
             android:layout_marginTop="6dp"
             android:layout_marginBottom="6dp"
             />
-        <ImageView
-            android:id="@+id/image_direction"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:gravity="center"
-            android:background="@drawable/dir_plane" />
         <TextView
             android:id="@+id/text_test_info"
             android:layout_width="wrap_content"

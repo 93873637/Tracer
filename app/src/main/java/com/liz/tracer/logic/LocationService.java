@@ -89,7 +89,6 @@ public class LocationService {
         } else {
             Toast.makeText(context, "No location mLocationProvider", Toast.LENGTH_SHORT).show();
             LogEx.e("No location mLocationProvider available");
-            return;
         }
     }
 
