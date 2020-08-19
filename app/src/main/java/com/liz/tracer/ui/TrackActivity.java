@@ -1,30 +1,18 @@
 package com.liz.tracer.ui;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.liz.androidutils.LocationUtils;
-import com.liz.androidutils.LogUtils;
 import com.liz.androidutils.TimeUtils;
-import com.liz.androidutils.ui.AppCompatActivityEx;
-import com.liz.androidutils.ui.FlingAction;
-import com.liz.androidutils.ui.FlingActionLeft;
-import com.liz.androidutils.ui.FlingActionRight;
 import com.liz.tracer.R;
-import com.liz.tracer.app.MyApp;
 import com.liz.tracer.logic.ComDef;
 import com.liz.tracer.logic.DataLogic;
 import com.liz.tracer.logic.LocationService;
-import com.liz.tracer.logic.MapPoint;
 import com.liz.tracer.logic.TestData;
 
-public class TrackActivity extends AppCompatActivityEx {
-
-    private static final int UI_TIMER_DELAY = 200;
-    private static final int UI_TIMER_PERIOD = 1000;
+abstract class TrackActivity extends TracerBaseActivity {
 
     private TextView tvTimeCurrent;
     private TextView tvTimeStart;
@@ -34,7 +22,6 @@ public class TrackActivity extends AppCompatActivityEx {
     private TextView tvTestInfo;
     private TextView tvBearing;
     private TextView tvMapInfo;
-    private ImageView ivDirection;
 
     private TextView tvCurrentSpeed;
     private TextView tvCurrentSpeedInfo;
@@ -59,30 +46,10 @@ public class TrackActivity extends AppCompatActivityEx {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setProp(PROP_NO_TITLE);
-        setProp(PROP_KEEP_SCREEN_ON);
-        setContentView(R.layout.activity_track);
+    }
 
-        LogUtils.trace();
-        MyApp.registerActivity(this);
-
+    protected void initCreate() {
         addFlingView(findViewById(R.id.ll_track_main));
-        addFlingAction(new FlingActionRight(new FlingAction.FlingCallback() {
-            @Override
-            public void onFlingAction(FlingAction flingAction) {
-                Intent intent = new Intent(TrackActivity.this, TracerActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                startActivity(intent);
-            }
-        }));
-        addFlingAction(new FlingActionLeft(new FlingAction.FlingCallback() {
-            @Override
-            public void onFlingAction(FlingAction flingAction) {
-                Intent intent = new Intent(TrackActivity.this, Track2Activity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                startActivity(intent);
-            }
-        }));
 
         tvTimeCurrent = findViewById(R.id.text_current_time);
         tvTimeStart = findViewById(R.id.text_start_time);
@@ -92,7 +59,6 @@ public class TrackActivity extends AppCompatActivityEx {
         tvTestInfo = findViewById(R.id.text_test_info);
         tvBearing = findViewById(R.id.text_bearing);
         tvMapInfo = findViewById(R.id.text_map_info);
-        ivDirection = findViewById(R.id.image_direction);
 
         tvCurrentSpeed = findViewById(R.id.text_current_speed);
         tvCurrentSpeedInfo = findViewById(R.id.text_current_speed_info);
@@ -114,6 +80,10 @@ public class TrackActivity extends AppCompatActivityEx {
         });
     }
 
+    protected void setBackground(int r, int g, int b) {
+        mTrackSurface.setBackground(255, r, g, b);
+    }
+
     private int getSpeedWidth(double ratio) {
         int totalWidth = tvCurrentSpeedInfo.getWidth();
         int speedWidth = (int) (totalWidth * ratio);
@@ -129,26 +99,6 @@ public class TrackActivity extends AppCompatActivityEx {
         tv.setBackgroundColor(DataLogic.getSpeedBarColor(speed));
     }
 
-
-    protected void updateDirectionIcon() {
-        if (!LocationService.inst().isRunning()) {
-            ivDirection.setVisibility(View.INVISIBLE);
-        } else {
-            ivDirection.setVisibility(View.VISIBLE);
-            MapPoint lsp = DataLogic.inst().getLastSurfacePoint();
-            if (lsp == null) {
-                ivDirection.setTranslationX(0);
-                ivDirection.setTranslationY(0);
-                ivDirection.setRotation(0);
-            }
-            else {
-                ivDirection.setTranslationX((int) lsp.x - ivDirection.getWidth() / 2 + 30);
-                ivDirection.setTranslationY((int) lsp.y - ivDirection.getHeight() / 2 + 16);
-                ivDirection.setRotation(LocationService.inst().getValidBearing());
-            }
-        }
-    }
-
     @Override
     protected void updateUI() {
         tvTimeCurrent.setText(TimeUtils.currentTime());
@@ -158,7 +108,6 @@ public class TrackActivity extends AppCompatActivityEx {
         mTrackSurface.updateTrackSurface();
         tvBearing.setText(LocationService.inst().getValidBearingText());
         tvMapInfo.setText(DataLogic.inst().getMapInfo());
-        updateDirectionIcon();
 
         if (TestData.isTestMode()) {
             tvTestInfo.setVisibility(View.VISIBLE);

@@ -2,9 +2,12 @@ package com.liz.tracer.ui;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -12,6 +15,7 @@ import android.view.SurfaceView;
 import android.view.View;
 
 import com.liz.androidutils.LogUtils;
+import com.liz.tracer.R;
 import com.liz.tracer.logic.ComDef;
 import com.liz.tracer.logic.DataLogic;
 import com.liz.tracer.logic.MapPoint;
@@ -34,21 +38,16 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
     private static final int DEFAULT_ORIGIN_X = SCREEN_MARGIN_START;
     private static final int DEFAULT_ORIGIN_Y = SCREEN_MARGIN_TOP;
 
-    private static final int CANVAS_BG_A = 255;
-    private static final int CANVAS_BG_R = 0;
-    private static final int CANVAS_BG_G = 0;
-    private static final int CANVAS_BG_B = 0;
-
-    private int mCanvasBgA = CANVAS_BG_A;
-    private int mCanvasBgR = CANVAS_BG_R;
-    private int mCanvasBgG = CANVAS_BG_G;
-    private int mCanvasBgB = CANVAS_BG_B;
+    private int mCanvasBgA = 255;
+    private int mCanvasBgR = 0;
+    private int mCanvasBgG = 0;
+    private int mCanvasBgB = 0;
 
     private int mOriginX = DEFAULT_ORIGIN_X;
     private int mOriginY = DEFAULT_ORIGIN_Y;
 
     private Paint mTrackPaint = new Paint();
-    //####@: private Bitmap mDirectionBmp = null;
+    private Bitmap mDirectionBmp = null;
 
     public TrackSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -67,18 +66,8 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         LogUtils.trace();
         mTrackPaint.setColor(ComDef.TRACK_LINE_COLOR);
         mTrackPaint.setStrokeWidth(TRACK_LINE_WIDTH);
-
         setOnTouchListener(this);
-
-        //####@:
-        //load direction bitmap
-//        Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.dir_plane);
-//        Matrix matrix = new Matrix();
-//        float scaleWidth = 1.0f;
-//        float scaleHeight = 1.0f;
-//        matrix.postScale(scaleWidth, scaleHeight);
-//        mDirectionBmp = Bitmap.createBitmap(bmp, 0, 0, 256, 256, matrix, true);
-
+        mDirectionBmp = ((BitmapDrawable)getResources().getDrawable(R.drawable.dir_plane)).getBitmap();
         new Thread() {
             public void run() {
                 drawSurface();
@@ -347,7 +336,7 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         int endY;
 
         // draw track lines by points
-        MapPoint mp;
+        MapPoint mp = null;
         for (int i = 1; i < dataList.size(); i++) {
             mp = dataList.get(i);
             setPaintColor(mp.loc.getSpeed());
@@ -360,7 +349,44 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         }
 
         // draw direction at last point
-        ////####@:
         //canvas.drawBitmap(mDirectionBmp, startX, startY, mTrackPaint);
+        if (mp != null) {
+            canvas.drawBitmap(adjustPhotoRotation0(mDirectionBmp, mp.loc.getBearing()),
+                    startX-mDirectionBmp.getWidth()/2-10, startY-mDirectionBmp.getHeight()/2-10, mTrackPaint);
+        }
+    }
+
+    Bitmap adjustPhotoRotation0(Bitmap bm, final float orientationDegree) {
+        Matrix m = new Matrix();
+        m.setRotate(orientationDegree, (float) bm.getWidth() / 2, (float) bm.getHeight() / 2);
+        try {
+            Bitmap bm1 = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), m, true);
+            return bm1;
+        } catch (OutOfMemoryError ex) {
+        }
+        return null;
+    }
+
+    Bitmap adjustPhotoRotation(Bitmap bm, final float orientationDegree) {
+        Matrix m = new Matrix();
+        m.setRotate(orientationDegree, (float) bm.getWidth() / 2, (float) bm.getHeight() / 2);
+        float targetX, targetY;
+        if (orientationDegree == 90) {
+            targetX = bm.getHeight();
+            targetY = 0;
+        } else {
+            targetX = bm.getHeight();
+            targetY = bm.getWidth();
+        }
+        final float[] values = new float[9];
+        m.getValues(values);
+        float x1 = values[Matrix.MTRANS_X];
+        float y1 = values[Matrix.MTRANS_Y];
+        m.postTranslate(targetX - x1, targetY - y1);
+        Bitmap bm1 = Bitmap.createBitmap(bm.getHeight(), bm.getWidth(), Bitmap.Config.ARGB_8888);
+        Paint paint = new Paint();
+        Canvas canvas = new Canvas(bm1);
+        canvas.drawBitmap(bm, m, paint);
+        return bm1;
     }
 }
