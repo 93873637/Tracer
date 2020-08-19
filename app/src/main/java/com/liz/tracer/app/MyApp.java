@@ -1,5 +1,6 @@
 package com.liz.tracer.app;
 
+import com.liz.androidutils.AudioUtils;
 import com.liz.androidutils.LogEx;
 import com.liz.androidutils.app.AppEx;
 import com.liz.tracer.logic.ComDef;
@@ -23,6 +24,7 @@ public class MyApp extends AppEx {
         LogEx.setMaxLogFileSize(20 * 1024 * 1024);
         LogEx.setSaveToFile(true);
 
+        AudioUtils.setSystemVolume(this, AudioUtils.MAX_VOLUME);
         DataLogic.inst().init();
     }
 }
