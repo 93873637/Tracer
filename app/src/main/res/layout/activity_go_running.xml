@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ll_track_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/go_running_background_color"
+    android:orientation="vertical">
+
+    <!--times bar-->
+    <LinearLayout
+        android:id="@+id/ll_times_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="0dp"
+        android:background="@color/go_running_timebar_background_color"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/text_current_time"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:gravity="center"
+            android:text="10:29:58"
+            android:textColor="@color/go_running_time_text"
+            android:textSize="@dimen/go_running_time_text_size"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_start_time"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="10:00:00"
+            android:textColor="@color/go_running_time_text"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_time_elapsed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:gravity="center"
+            android:text="00:20:30"
+            android:textColor="@color/go_running_time_text"
+            android:textSize="@dimen/go_running_time_text_size"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- performance info bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginEnd="6dp"
+        android:layout_marginBottom="1dp"
+        android:gravity="center_horizontal"
+        android:background="@color/go_running_background_color"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/text_total_perform"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            android:background="@color/go_running_background_color"
+            android:gravity="center"
+            android:text="+9898/+19:30"
+            android:textColor="#00ff00"
+            android:textSize="@dimen/go_running_kmtime_text_size"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_current_perform"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            android:background="@color/go_running_background_color"
+            android:gravity="center"
+            android:text="+330/+5:30"
+            android:textColor="#00ff00"
+            android:textSize="@dimen/go_running_text_small_size"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- KM time record bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginEnd="6dp"
+        android:layout_marginBottom="1dp"
+        android:gravity="center_horizontal"
+        android:background="@color/go_running_background_color"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/text_km_record"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            android:background="#000919"
+            android:shadowColor="#ff000000"
+            android:shadowDx="5"
+            android:shadowDy="5"
+            android:shadowRadius="3"
+            android:text="99:99/99:99/99:99"
+            android:textColor="#ffff00"
+            android:textSize="@dimen/go_running_text_size"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_speed_record"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            android:background="#000919"
+            android:shadowColor="#ff000000"
+            android:shadowDx="5"
+            android:shadowDy="5"
+            android:shadowRadius="3"
+            android:text="99:99"
+            android:textColor="#ffff00"
+            android:textSize="@dimen/go_running_text_size"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!--total distance bar-->
+    <LinearLayout
+        android:id="@+id/ll_statis_bar"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="center"
+        android:layout_marginStart="6dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginEnd="6dp"
+        android:layout_marginBottom="1dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:background="@color/go_running_background_color"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/text_total_distance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:gravity="center"
+            android:text="99,999"
+            android:textColor="#ffff00"
+            android:textSize="@dimen/go_running_distance_total_text_size"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/text_current_km_duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="33dp"
+            android:layout_marginBottom="10dp"
+            android:gravity="center"
+            android:text="99:99"
+            android:textColor="#00ff00"
+            android:textSize="@dimen/go_running_time_text_size"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Meters per minute record bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginEnd="6dp"
+        android:layout_marginBottom="1dp"
+        android:gravity="center_horizontal"
+        android:background="@color/go_running_background_color"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/text_minute_record"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            android:background="#000919"
+            android:shadowColor="#ff000000"
+            android:shadowDx="5"
+            android:shadowDy="5"
+            android:shadowRadius="3"
+            android:text="99:99/99:99/99:99"
+            android:textColor="#ffff00"
+            android:textSize="@dimen/go_running_text_small_size"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- current speed bar -->
+    <RelativeLayout
+        android:id="@+id/layout_current_speed_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:layout_marginEnd="2dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="1dp"
+        android:background="@color/go_running_bottom_background_color">
+
+        <!-- current speed rank bar 5/10/15... -->
+        <LinearLayout
+            android:id="@+id/layout_current_speed_rank"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="0dp"
+            android:padding="0dp"
+            android:background="@color/go_running_speed_rank_background_color"
+            android:orientation="horizontal">
+        </LinearLayout>
+
+        <!-- current speed background color -->
+        <TextView
+            android:id="@+id/text_current_speed_bar_color"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="0dp"
+            android:layout_below="@id/layout_current_speed_rank"
+            android:background="#ff0000"
+            android:gravity="center"
+            android:paddingTop="8dp"
+            android:textSize="@dimen/go_running_speed_text_size"
+            android:textStyle="bold" />
+
+        <!-- current speed text -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:layout_below="@id/layout_current_speed_rank"
+            android:paddingTop="8dp"
+            android:gravity="center|bottom"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/text_current_km_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:shadowColor="#ff000000"
+                android:shadowDx="5"
+                android:shadowDy="5"
+                android:shadowRadius="3"
+                android:text="99:99"
+                android:textColor="#00ff00"
+                android:textSize="@dimen/go_running_speed_text_size"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/text_current_speed_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:includeFontPadding="false"
+                android:padding="0dp"
+                android:shadowColor="#ff000000"
+                android:shadowDx="5"
+                android:shadowDy="5"
+                android:shadowRadius="3"
+                android:text="13.9/50.1"
+                android:textColor="#00ff00"
+                android:textSize="@dimen/go_running_text_small_size"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <!-- average speed bar -->
+    <RelativeLayout
+        android:id="@+id/layout_average_speed_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:layout_marginEnd="2dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="0dp"
+        android:background="@color/go_running_bottom_background_color">
+
+        <!-- average speed rank bar 5/10/15... -->
+        <LinearLayout
+            android:id="@+id/layout_average_speed_rank"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/go_running_speed_rank_background_color"
+            android:orientation="horizontal">
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/text_average_speed"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="0dp"
+            android:layout_below="@id/layout_average_speed_rank"
+            android:background="#ff0000"
+            android:gravity="center"
+            android:paddingTop="8dp"
+            android:textSize="@dimen/go_running_speed_text_size"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            android:layout_below="@id/layout_average_speed_rank"
+            android:gravity="center|bottom"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/text_average_km_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:gravity="center_horizontal"
+                android:paddingTop="8dp"
+                android:shadowColor="#ff000000"
+                android:shadowDx="5"
+                android:shadowDy="5"
+                android:shadowRadius="3"
+                android:text="99:99"
+                android:textColor="#00ff00"
+                android:textSize="@dimen/go_running_speed_text_size"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/text_average_speed_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:layout_marginStart="2dp"
+                android:gravity="center_horizontal"
+                android:padding="0dp"
+                android:shadowColor="#ff000000"
+                android:shadowDx="5"
+                android:shadowDy="5"
+                android:shadowRadius="3"
+                android:text="13.9/50.1"
+                android:textColor="#00ff00"
+                android:textSize="@dimen/go_running_text_small_size"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <!-- location bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="0dp"
+        android:background="@color/go_running_bottom_background_color"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/text_max_speed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:padding="3dp"
+            android:text="0.00/0.00"
+            android:textColor="#00ff00"
+            android:textSize="@dimen/go_running_text_small_size"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/text_location_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:padding="3dp"
+            android:text="1600/3200"
+            android:textColor="#ffff00"
+            android:textSize="@dimen/go_running_text_small_size"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_bearing"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:paddingTop="5dp"
+            android:paddingBottom="1dp"
+            android:paddingStart="3dp"
+            android:paddingEnd="3dp"
+            android:text="东北偏北 2度"
+            android:textColor="#ffff00"
+            android:textSize="@dimen/go_running_text_small_size_ch"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- kilometers graph bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="131dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="2dp"
+        android:gravity="center_horizontal"
+        android:background="@color/go_running_graph_bar_bgcolor"
+        android:orientation="horizontal">
+
+        <!-- KM time info bar -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="6dp"
+            android:layout_marginBottom="2dp"
+            android:background="#00a1a1a1"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/text_last_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="99:99/99:99/99:99"
+                android:textColor="#ffff00"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
