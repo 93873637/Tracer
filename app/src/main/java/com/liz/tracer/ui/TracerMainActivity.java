@@ -6,10 +6,12 @@ import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.InputType;
 import android.text.method.ScrollingMovementMethod;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.ScrollView;
@@ -27,9 +29,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class TracerMainActivity extends TracerBaseActivity {
-
-    private static final int UI_TIMER_DELAY = 200;
-    private static final int UI_TIMER_PERIOD = 1000;
 
     private TextView tvTimeCurrent;
     private TextView tvTimeStart;
@@ -61,7 +60,7 @@ public class TracerMainActivity extends TracerBaseActivity {
         tvTimeElapsed = findViewById(R.id.text_time_elapsed);
         tvStatisInfo = findViewById(R.id.text_statis_info);
 
-        tvCurrentSpeed = findViewById(R.id.text_current_speed);
+        tvCurrentSpeed = findViewById(R.id.text_current_speed_bar_color);
         tvCurrentSpeedInfo = findViewById(R.id.text_current_speed_info);
         tvAverageSpeed = findViewById(R.id.text_average_speed);
         tvAverageSpeedInfo = findViewById(R.id.text_average_speed_info);
@@ -70,59 +69,24 @@ public class TracerMainActivity extends TracerBaseActivity {
         ivOrientation.setRotation(0);
 
         btnSwitch = findViewById(R.id.btn_switch_tracing);
-        btnSwitch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                LocationService.inst().switchTracing();
-                updateUI();
-            }
+        btnSwitch.setOnClickListener(view -> {
+            LocationService.inst().switchTracing();
+            updateUI();
         });
 
-        findViewById(R.id.btn_reset_running).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                LocationService.inst().onReset();
-            }
-        });
-        findViewById(R.id.btn_config_menu).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showPopupMenu(view);
-            }
-        });
-        findViewById(R.id.btn_exit_app).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                new AlertDialog
-                        .Builder(TracerMainActivity.this)
-                        .setTitle("Confirm Exit?")
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                MyApp.exitApp();
-                            }
-                        }).setNegativeButton("Cancel", null).show();
-            }
-        });
+        findViewById(R.id.btn_reset_running).setOnClickListener(view -> LocationService.inst().onReset());
+        findViewById(R.id.btn_config_menu).setOnClickListener(view -> showPopupMenu(view));
+        findViewById(R.id.btn_exit_app).setOnClickListener(view -> new AlertDialog
+                .Builder(TracerMainActivity.this)
+                .setTitle("Confirm Exit?")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton("OK", (dialogInterface, i) -> MyApp.exitApp()).setNegativeButton("Cancel", null).show());
 
         scrollInfo = findViewById(R.id.scroll_info);
         tvLogInfo = findViewById(R.id.text_log_info);
         tvLogInfo.setMovementMethod(ScrollingMovementMethod.getInstance());
 
-        setUITimer(UI_TIMER_DELAY, UI_TIMER_PERIOD);
-
         LocationService.inst().init(TracerMainActivity.this);
-        LocationService.inst().addLocationCallback(new LocationService.LocationCallback() {
-            @Override
-            public void onLocationUpdate() {
-                TracerMainActivity.this.runOnUiThread(new Runnable() {
-                    public void run() {
-                        updateLogInfo();
-                    }
-                });
-            }
-        });
 
         mCurrentBearing = LocationService.inst().getBearing();
         ivOrientation.setRotation(mCurrentBearing);
@@ -248,7 +212,7 @@ public class TracerMainActivity extends TracerBaseActivity {
             }
         }
 
-        // set speed bar showing
+        // set threshold bar showing
         tvCurrentSpeed.setWidth(1);  // must call this first to make width take effect?
         tvCurrentSpeed.getLayoutParams().width = getSpeedWidth(LocationService.inst().getCurrentSpeedRatio());
         tvAverageSpeed.setWidth(1);
@@ -283,20 +247,29 @@ public class TracerMainActivity extends TracerBaseActivity {
             public boolean onMenuItemClick(MenuItem item) {
                 //Toast.makeText(getApplicationContext(), item.getTitle(), Toast.LENGTH_SHORT).show();
                 switch (item.getItemId()) {
-                    case R.id.action_test_mode_track:
+//                    case R.id.action_play_trace_file:
+//                        onPlayTraceFile();
+//                        return true;
+//                    case R.id.action_load_trace_file:
+//                        onLoadTraceFile();
+//                        return true;
+                    case R.id.action_play_test_data:
                         TestData.setTestMode(ComDef.TEST_MODE_TRACKING);
                         TestData.loadTestData();
                         TestData.setReverseLoad(false);
                         return true;
-                    case R.id.action_test_mode_track_reverse:
+                    case R.id.action_play_test_data_reverse:
                         TestData.setTestMode(ComDef.TEST_MODE_TRACKING);
                         TestData.loadTestData();
                         TestData.setReverseLoad(true);
                         return true;
-                    case R.id.action_test_mode_load_all:
-                        TestData.setTestMode(ComDef.TEST_MODE_LOAD_ALL);
+                    case R.id.action_load_test_data:
+                        TestData.setTestMode(ComDef.TEST_MODE_LOAD);
                         TestData.loadTestData();
                         TestData.setReverseLoad(false);
+                        return true;
+                    case R.id.action_set_test_play_speed:
+                        onSetTestPlaySpeed();
                         return true;
                     default:
                         break;
@@ -311,5 +284,30 @@ public class TracerMainActivity extends TracerBaseActivity {
             }
         });
         popupMenu.show();
+    }
+
+    protected void onPlayTraceFile() {
+        //##@:todo:
+    }
+
+    protected void onLoadTraceFile() {
+        //##@:todo:
+    }
+
+    protected void onSetTestPlaySpeed() {
+        EditText editText = new EditText(this);
+        editText.setInputType(InputType.TYPE_CLASS_NUMBER);
+        editText.setText(TestData.getTestPlaySpeedStr());
+        new AlertDialog.Builder(this)
+                .setTitle("请输入播放速率(%[" + TestData.TEST_PLAY_SPEED_MIN + " ~ " + TestData.TEST_PLAY_SPEED_MAX + "])")
+                .setIcon(android.R.drawable.ic_dialog_info)
+                .setView(editText)
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        TestData.setTestPlaySpeed(editText.getText().toString());
+                    }
+                })
+                .setNegativeButton("取消", null)
+                .show();
     }
 }

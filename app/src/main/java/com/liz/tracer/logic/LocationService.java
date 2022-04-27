@@ -16,9 +16,7 @@ import com.liz.androidutils.LocationUtils;
 import com.liz.androidutils.LogEx;
 import com.liz.androidutils.LogUtils;
 import com.liz.androidutils.NumUtils;
-import com.liz.androidutils.SoundUtils;
 import com.liz.androidutils.TimeUtils;
-import com.liz.tracer.R;
 import com.liz.tracer.app.MyApp;
 
 import java.util.ArrayList;
@@ -32,14 +30,9 @@ import static com.liz.androidutils.LocationUtils.differentLocation;
 @SuppressWarnings("unused, WeakerAccess")
 public class LocationService {
 
-    private static final int LOCATION_UPDATE_MIN_TIME = 1000;
-    private static final float LOCATION_UPDATE_MIN_DISTANCE = 0.5f;
-
-    private static final int LOCATION_CHECK_TIMER_DELAY = 100;
-    private static final int LOCATION_CHECK_TIMER_PERIOD = 1000;
-
     ///////////////////////////////////////////////////////////////////////////////////////////////
     private static LocationService inst_ = new LocationService();
+
     public static LocationService inst() {
         return inst_;
     }
@@ -47,6 +40,7 @@ public class LocationService {
 
     private LocationManager mLocationManager = null;
     private String mLocationProvider = "";
+    private LocationCallback mLocationCallback = null;
     private ArrayList<LocationCallback> mCallbackList = new ArrayList<>();
 
     // running parameters
@@ -92,6 +86,10 @@ public class LocationService {
         }
     }
 
+    public void setLocationCallback(LocationCallback callback) {
+        mLocationCallback = callback;
+    }
+
     public void addLocationCallback(LocationCallback callback) {
         mCallbackList.add(callback);
     }
@@ -113,27 +111,15 @@ public class LocationService {
     }
 
     public Location getValidBearingLocation() {
-        int index = mLocationList.size() - 1;
-        while(index >= 0) {
-            float bearing = mLocationList.get(index).getBearing();
-            if (Math.abs(bearing) > 1e-3f) {
-                return mLocationList.get(index);
-            }
-            index --;
-        }
-        return null;
+        return LocationUtils.getValidBearingLocation(mLocationList);
     }
 
     public float getValidBearing() {
-        Location loc = getValidBearingLocation();
-        if (loc == null) {
-            return 0;
-        }
-        return loc.getBearing();
+        return LocationUtils.getValidBearing(mLocationList);
     }
 
     public String getValidBearingText() {
-        Location loc = getValidBearingLocation();
+        Location loc = LocationUtils.getValidBearingLocation(mLocationList);
         if (loc == null) {
             return "NA";
         }
@@ -144,9 +130,8 @@ public class LocationService {
         Location location = getLastLocation();
         if (location == null) {
             return 0;
-        }
-        else {
-            return (int)location.getBearing();
+        } else {
+            return (int) location.getBearing();
         }
     }
 
@@ -155,7 +140,7 @@ public class LocationService {
         Location location = getLastLocation();
         if (location != null) {
             if (Math.abs(location.getSpeed()) > ComDef.ZERO_SPEED) {
-                text = "" + (int)location.getBearing();
+                text = "" + (int) location.getBearing();
                 text += " " + LocationUtils.getBearingName(location.getBearing());
             }
         }
@@ -165,8 +150,7 @@ public class LocationService {
     public String getStartTimeText() {
         if (mTimeStart == 0) {
             return ComDef.TIME_RESET_STRING;
-        }
-        else {
+        } else {
             return TimeUtils.formatTime(mTimeStart);
         }
     }
@@ -175,8 +159,7 @@ public class LocationService {
         long duration = getDuration();
         if (duration == 0) {
             return 0;  //just start or param reset
-        }
-        else {
+        } else {
             return DataLogic.inst().getDistanceTotal() * 1000 / duration;
         }
     }
@@ -202,7 +185,16 @@ public class LocationService {
     }
 
     public double getSpeedRatio(double speed) {
-        return speed/getSpeedLimit(speed);
+        double speedH = getSpeedLimitHigh(speed);
+        double speedL = getSpeedLimitLow(speed);
+        double range = speedH - speedL;
+        if (range > 0) {
+            return (speed - speedL) / range;
+        }
+        else {
+            LogUtils.te("no speed range.");
+            return 0;
+        }
     }
 
     public double getCurrentSpeedRatio() {
@@ -213,20 +205,32 @@ public class LocationService {
         return getSpeedRatio(getAverageSpeed());
     }
 
-    public double getSpeedLimit(double speed) {
+    public double getSpeedLimitHigh(double speed) {
         for (SpeedColor sc : ComDef.SPEED_BAR_COLORS) {
-            if (speed < sc.speed) {
-                return sc.speed;
+            if (speed < sc.threshold) {
+                return sc.threshold;
             }
         }
-        return getMaxSpeed();  // it is rocket speed, using current max as limit
+        return getMaxSpeed();  // speed out of range, using current max as limit
+    }
+
+    public double getSpeedLimitLow(double speed) {
+        for (int i = ComDef.SPEED_BAR_COLORS.length - 1; i >= 0; i--) {
+            if (speed >= ComDef.SPEED_BAR_COLORS[i].threshold) {
+                return ComDef.SPEED_BAR_COLORS[i].threshold;
+            }
+        }
+        return 0;
+    }
+
+    public String getLocationInfo() {
+        return "" + mLocationList.size();
     }
 
     public double getCurrentSpeed() {
         if (!mIsRunning) {
             return 0;
-        }
-        else {
+        } else {
             Location location = getLastLocation();
             if (location == null) {
                 return 0;
@@ -239,8 +243,7 @@ public class LocationService {
     public float getCurrentAccuracy() {
         if (!mIsRunning) {
             return 0;
-        }
-        else {
+        } else {
             Location location = getLastLocation();
             if (location == null) {
                 return 0;
@@ -256,6 +259,14 @@ public class LocationService {
 
     public String getCurrentSpeedText() {
         return LocationUtils.getDualSpeedText(getCurrentSpeed()) + "/" + String.format("%.1f", getCurrentAccuracy());
+    }
+
+    public String getCurrentSpeedText(boolean withAccuracy) {
+        String txt = LocationUtils.getDualSpeedText(getCurrentSpeed());
+        if (withAccuracy) {
+            txt += "/" + String.format("%.1f", getCurrentAccuracy());
+        }
+        return txt;
     }
 
     public String getStatisInfo() {
@@ -276,8 +287,7 @@ public class LocationService {
     public long getDuration() {
         if (mIsRunning) {
             return System.currentTimeMillis() - mTimeStart;
-        }
-        else {
+        } else {
             return mTimeStop - mTimeStart;
         }
     }
@@ -306,6 +316,7 @@ public class LocationService {
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Check Timer
     private Timer mCheckTimer;
+
     private void setCheckTimer(long timerDelay, long timerPeriod) {
         this.mCheckTimer = new Timer();
         this.mCheckTimer.schedule(new TimerTask() {
@@ -314,6 +325,7 @@ public class LocationService {
             }
         }, timerDelay, timerPeriod);
     }
+
     private void removeCheckTimer() {
         if (this.mCheckTimer != null) {
             this.mCheckTimer.cancel();
@@ -334,20 +346,22 @@ public class LocationService {
     private void onStart() {
         if (mIsRunning) {
             LogUtils.td("already started");
-        }
-        else {
+        } else {
             mIsRunning = true;
             resetRunningParameters();
             mTimeStart = System.currentTimeMillis();
             if (TestData.testTrack()) {
+                //TestData.startTestTrackingOnTimer();
                 TestData.startTestTracking();
-            }
-            else if (TestData.testLoadAll()) {
+            } else if (TestData.testLoadAll()) {
                 TestData.startTestLoadAll();
-            }
-            else {
-                mLocationManager.requestLocationUpdates(mLocationProvider, LOCATION_UPDATE_MIN_TIME, LOCATION_UPDATE_MIN_DISTANCE, mLocationListener);
-                setCheckTimer(LOCATION_CHECK_TIMER_DELAY, LOCATION_CHECK_TIMER_PERIOD);
+            } else {
+                mLocationManager.requestLocationUpdates(mLocationProvider,
+                        ComDef.LOCATION_UPDATE_MIN_TIME,
+                        ComDef.LOCATION_UPDATE_MIN_DISTANCE,
+                        mLocationListener);
+                setCheckTimer(ComDef.LOCATION_CHECK_TIMER_DELAY,
+                        ComDef.LOCATION_CHECK_TIMER_PERIOD);
             }
         }
     }
@@ -355,12 +369,10 @@ public class LocationService {
     private void onStop() {
         if (!mIsRunning) {
             LogUtils.td("already stopped");
-        }
-        else {
+        } else {
             if (TestData.isTestMode()) {
                 TestData.stopTest();
-            }
-            else {
+            } else {
                 removeCheckTimer();
                 mLocationManager.removeUpdates(mLocationListener);
             }
@@ -379,8 +391,7 @@ public class LocationService {
         Location location = mLocationManager.getLastKnownLocation(mLocationProvider);
         if (location == null) {
             LogUtils.td("last known location null");
-        }
-        else {
+        } else {
             LogUtils.td(new Location(location).toString() + ", current time = " + System.currentTimeMillis());
         }
     }
@@ -420,7 +431,8 @@ public class LocationService {
 
         if (mLocationMax == null || newLocation.getSpeed() > mLocationMax.getSpeed()) {
             mLocationMax = newLocation;
-            SoundUtils.beep(MyApp.getAppContext(), R.raw.beep);
+            DataLogic.inst().onNewMaxSpeed();
+            MyApp.playSoundMaxSpeed();
         }
 
         if (!TestData.isTestMode()) {
@@ -428,8 +440,15 @@ public class LocationService {
             LogEx.i(getLastLocationInfo());
         }
 
+        /*
         for (LocationCallback callback : mCallbackList) {
-            callback.onLocationUpdate();
+            if (callback != null) {
+                callback.onLocationUpdate();
+            }
+        }
+        //*/
+        if (mLocationCallback != null) {
+            mLocationCallback.onLocationUpdate();
         }
     }
 

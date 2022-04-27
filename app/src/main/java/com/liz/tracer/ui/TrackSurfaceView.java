@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
@@ -14,11 +13,13 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 
+import com.liz.androidutils.BitmapUtils;
 import com.liz.androidutils.LogUtils;
+import com.liz.androidutils.MapPoint;
+import com.liz.androidutils.Point2D;
 import com.liz.tracer.R;
 import com.liz.tracer.logic.ComDef;
 import com.liz.tracer.logic.DataLogic;
-import com.liz.tracer.logic.MapPoint;
 
 import java.util.List;
 
@@ -30,10 +31,11 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
     private static final float TRACK_LINE_WIDTH = 22f;
 
-    public static final int SCREEN_MARGIN_TOP = 0;
-    public static final int SCREEN_MARGIN_BOTTOM = 0;
-    public static final int SCREEN_MARGIN_START = 0;
-    public static final int SCREEN_MARGIN_END = 0;
+    // margin for showing full plane on edge
+    public static final int SCREEN_MARGIN_TOP = 120;
+    public static final int SCREEN_MARGIN_BOTTOM = 120;
+    public static final int SCREEN_MARGIN_START = 120;
+    public static final int SCREEN_MARGIN_END = 120;
 
     private static final int DEFAULT_ORIGIN_X = SCREEN_MARGIN_START;
     private static final int DEFAULT_ORIGIN_Y = SCREEN_MARGIN_TOP;
@@ -48,6 +50,24 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
     private Paint mTrackPaint = new Paint();
     private Bitmap mDirectionBmp = null;
+
+    /**
+     * the point coordinates x, y which measured from direction bitmap
+     * origin: center of direction bmp
+     * x: left->right
+     * y: up->bottom
+     */
+    private Point2D mAnchorPoint = null;
+
+    public interface SurfaceCallback {
+        void onSurfaceUpdated();
+    }
+
+    private SurfaceCallback mCallback = null;
+
+    public void setSurfaceCallback(SurfaceCallback callback) {
+        mCallback = callback;
+    }
 
     public TrackSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -67,7 +87,9 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         mTrackPaint.setColor(ComDef.TRACK_LINE_COLOR);
         mTrackPaint.setStrokeWidth(TRACK_LINE_WIDTH);
         setOnTouchListener(this);
-        mDirectionBmp = ((BitmapDrawable)getResources().getDrawable(R.drawable.dir_plane)).getBitmap();
+        mDirectionBmp = ((BitmapDrawable) getResources().getDrawable(R.drawable.dir_plane)).getBitmap();
+        LogUtils.d("get direction bmp: W/H=" + mDirectionBmp.getWidth() + "/" + mDirectionBmp.getHeight());
+        mAnchorPoint = new Point2D(2, 91);
         new Thread() {
             public void run() {
                 drawSurface();
@@ -115,8 +137,7 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
             case MotionEvent.ACTION_MOVE:
                 if (checkLongPress(event)) {
                     return true;
-                }
-                else if (checkMoving(event)) {
+                } else if (checkMoving(event)) {
                     return true;
                 }
                 break;
@@ -135,20 +156,28 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
     public boolean checkZoom(MotionEvent event) {
         LogUtils.td("event=" + event.toString());
         int nCnt = event.getPointerCount();
-        if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_POINTER_DOWN && 2 == nCnt) {
+        if (nCnt != 2) {
+            return false;
+        }
+        if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_POINTER_DOWN) {
             double dx = Math.abs(event.getX(0) - event.getX(1));
             double dy = Math.abs(event.getY(0) - event.getY(1));
             mStartDistance = Math.sqrt(dx * dx + dy * dy);
             onZoomStart();
             return true;
-        } else if ((event.getAction() & MotionEvent.ACTION_MASK) == ACTION_MOVE && 2 == nCnt) {
+        } else if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_POINTER_UP) {
             double dx = Math.abs(event.getX(0) - event.getX(1));
             double dy = Math.abs(event.getY(0) - event.getY(1));
             double d = Math.sqrt(dx * dx + dy * dy);
-            onZoom(d / mStartDistance);
+            onZoomAction(d / mStartDistance);
             return true;
-        }
-        else {
+        } else if ((event.getAction() & MotionEvent.ACTION_MASK) == ACTION_MOVE) {
+            double dx = Math.abs(event.getX(0) - event.getX(1));
+            double dy = Math.abs(event.getY(0) - event.getY(1));
+            double d = Math.sqrt(dx * dx + dy * dy);
+            onInstantZoom(d / mStartDistance);
+            return true;
+        } else {
             return false;
         }
     }
@@ -157,9 +186,17 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         DataLogic.inst().onZoomStart();
     }
 
-    public void onZoom(double zoom) {
+    public void onZoomAction(double zoom) {
         DataLogic.inst().onUserZoom(zoom);
         updateTrackSurface();
+        if (mCallback != null) {
+            mCallback.onSurfaceUpdated();
+        }
+    }
+
+    public void onInstantZoom(double zoom) {
+        //DataLogic.inst().onUserZoom(zoom);
+        //updateTrackSurface();
     }
 
     private boolean checkLongPress(MotionEvent event) {
@@ -173,6 +210,7 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
     /**
      * check if long pressed according to last down point
+     *
      * @param xDown 按下时X坐标
      * @param yDown 按下时Y坐标
      * @param event 移动事件
@@ -203,7 +241,7 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
     private void onClickOnce(final float x, final float y, final long timeDiff) {
         LogUtils.td(x + ", " + y + ", t=" + timeDiff + ", count=" + mClickCount);
-        mClickCount ++;
+        mClickCount++;
         if (mClickCount > 1) {
             onDoubleClick(x, y);
             mClickCount = 0;
@@ -227,7 +265,11 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
     private void onDoubleClick(final float x, final float y) {
         LogUtils.td(x + ", " + y);
-        DataLogic.inst().switchZoomMode();
+        DataLogic.inst().switchSurfaceMode();
+        updateTrackSurface();
+        if (mCallback != null) {
+            mCallback.onSurfaceUpdated();
+        }
     }
 
     public boolean checkMoving(MotionEvent event) {
@@ -304,12 +346,32 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
     }
 
     private Paint setPaintColor(double v) {
-        mTrackPaint.setColor(DataLogic.getSpeedColor(v));
+        mTrackPaint.setColor(DataLogic.getTrackColor(v));
         return mTrackPaint;
     }
 
     public void updateTrackSurface() {
         drawSurface();
+    }
+
+    public static float getValidBearing(List<MapPoint> dataList) {
+        MapPoint mp = getValidBearingLocation(dataList);
+        if (mp == null) {
+            return 0;
+        }
+        return mp.loc.getBearing();
+    }
+
+    public static MapPoint getValidBearingLocation(List<MapPoint> dataList) {
+        int index = dataList.size() - 1;
+        while (index >= 0) {
+            float bearing = dataList.get(index).loc.getBearing();
+            if (Math.abs(bearing) > 1e-3f) {
+                return dataList.get(index);
+            }
+            index--;
+        }
+        return null;
     }
 
     /**
@@ -329,64 +391,33 @@ public class TrackSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         //LogUtils.tv("canvasW/H=" + canvasWidth + "/" + canvasHeight);
 
         // move to first point
-        MapPoint mp0 = dataList.get(0);
-        int startX = mOriginX + (int) mp0.x;
-        int startY = mOriginY + (int) mp0.y;
-        int endX;
-        int endY;
+        Point2D p0 = dataList.get(0).createPoint2D();
+        Point2D pStart = p0.generateTranslationPoint(mOriginX, mOriginY);
+        Point2D pEnd;
 
         // draw track lines by points
         MapPoint mp = null;
         for (int i = 1; i < dataList.size(); i++) {
             mp = dataList.get(i);
             setPaintColor(mp.loc.getSpeed());
-            endX = mOriginX + (int) mp.x;
-            endY = mOriginY + (int) mp.y;
-            //LogUtils.tv("line (" + startX + ", " + startY + ") -> (" + endX + ", " + endY + ")");
-            canvas.drawLine(startX, startY, endX, endY, mTrackPaint);
-            startX = endX;
-            startY = endY;
+            pEnd = mp.generateTranslationPoint(mOriginX, mOriginY);
+            canvas.drawLine((float) pStart.x, (float) pStart.y, (float) pEnd.x, (float) pEnd.y, mTrackPaint);
+            pStart = pEnd;
         }
 
-        // draw direction at last point
-        //canvas.drawBitmap(mDirectionBmp, startX, startY, mTrackPaint);
+        // draw direction image at last point
+        Point2D pTopLeft;
+        Point2D pAnchor;
+        Bitmap bmpRotation;
         if (mp != null) {
-            canvas.drawBitmap(adjustPhotoRotation0(mDirectionBmp, mp.loc.getBearing()),
-                    startX-mDirectionBmp.getWidth()/2-10, startY-mDirectionBmp.getHeight()/2-10, mTrackPaint);
-        }
-    }
+            float bearing = getValidBearing(dataList);
+            bmpRotation = BitmapUtils.adjustPhotoRotation(mDirectionBmp, bearing);
+            pTopLeft = new Point2D(pStart.x - bmpRotation.getWidth() / 2.0, pStart.y - bmpRotation.getHeight() / 2.0);
 
-    Bitmap adjustPhotoRotation0(Bitmap bm, final float orientationDegree) {
-        Matrix m = new Matrix();
-        m.setRotate(orientationDegree, (float) bm.getWidth() / 2, (float) bm.getHeight() / 2);
-        try {
-            Bitmap bm1 = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), m, true);
-            return bm1;
-        } catch (OutOfMemoryError ex) {
-        }
-        return null;
-    }
+            pAnchor = mAnchorPoint.generateRotationPoint(bearing);
+            pTopLeft.translation(-pAnchor.x, -pAnchor.y);
 
-    Bitmap adjustPhotoRotation(Bitmap bm, final float orientationDegree) {
-        Matrix m = new Matrix();
-        m.setRotate(orientationDegree, (float) bm.getWidth() / 2, (float) bm.getHeight() / 2);
-        float targetX, targetY;
-        if (orientationDegree == 90) {
-            targetX = bm.getHeight();
-            targetY = 0;
-        } else {
-            targetX = bm.getHeight();
-            targetY = bm.getWidth();
+            canvas.drawBitmap(bmpRotation, (float) pTopLeft.x, (float) pTopLeft.y, mTrackPaint);
         }
-        final float[] values = new float[9];
-        m.getValues(values);
-        float x1 = values[Matrix.MTRANS_X];
-        float y1 = values[Matrix.MTRANS_Y];
-        m.postTranslate(targetX - x1, targetY - y1);
-        Bitmap bm1 = Bitmap.createBitmap(bm.getHeight(), bm.getWidth(), Bitmap.Config.ARGB_8888);
-        Paint paint = new Paint();
-        Canvas canvas = new Canvas(bm1);
-        canvas.drawBitmap(bm, m, paint);
-        return bm1;
     }
 }

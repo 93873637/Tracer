@@ -15,6 +15,11 @@ public class TestData {
     public static final int TEST_TIMER_DELAY = 200;
     public static final int TEST_TIMER_PERIOD = 100;
 
+    // test play speed, int percent value
+    public static final int DEFAULT_TEST_PLAY_SPEED = 100;  // i.e. real play speed 1x
+    public static final int TEST_PLAY_SPEED_MIN = 1;  // i.e. real play speed 0.01x
+    public static final int TEST_PLAY_SPEED_MAX = 1000;  // i.e. real play speed 10x
+
     private static ArrayList<Location> mTestLocationList = new ArrayList<>();
     private static int mLocationIndex = 0;
     private static Timer mTestTimer = null;
@@ -31,7 +36,7 @@ public class TestData {
     }
 
     public static boolean testLoadAll() {
-        return mTestMode == ComDef.TEST_MODE_LOAD_ALL;
+        return mTestMode == ComDef.TEST_MODE_LOAD;
     }
 
     public static boolean testSpeedBearing() {
@@ -46,27 +51,117 @@ public class TestData {
         mReverseLoad = reverse;
     }
 
+    private static long mLastLocationTime = 0;
+    private static Location mLastLocation = null;
+    private static int mTestPlaySpeed = DEFAULT_TEST_PLAY_SPEED;
+
+    /**
+     * start test data by location time
+     */
     public static void startTestTracking() {
+        mLocationIndex = 0;
+        mLastLocationTime = 0;
+        mLastLocation = null;
+        loopApplyTestData();
+    }
+
+    public static int getTestPlaySpeed() {
+        return mTestPlaySpeed;
+    }
+
+    public static String getTestPlaySpeedStr() {
+        return "" + mTestPlaySpeed;
+    }
+
+    public static float getRealTestPlaySpeed() {
+        return mTestPlaySpeed / 100.0f;
+    }
+
+    public static void setTestPlaySpeed(int speed) {
+        mTestPlaySpeed = speed;
+    }
+
+    public static void setTestPlaySpeed(String speedStr) {
+        int speed = Integer.parseInt(speedStr);
+        if (speed < TEST_PLAY_SPEED_MIN) {
+            speed = TEST_PLAY_SPEED_MIN;
+        }
+        if (speed > TEST_PLAY_SPEED_MAX) {
+            speed = TEST_PLAY_SPEED_MAX;
+        }
+        setTestPlaySpeed(speed);
+    }
+
+    private static Location getTestLocation() {
+        int index = mLocationIndex;
+        if (mReverseLoad) {
+            index = mTestLocationList.size() - mLocationIndex - 1;
+        }
+        return mTestLocationList.get(index);
+    }
+
+    private static void loopApplyTestData() {
+        if (mLocationIndex >= mTestLocationList.size()) {
+            stopTest();
+            return;
+        }
+
+        Location loc = getTestLocation();
+        LocationService.inst().onLocationChanged(loc);
+        mLocationIndex++;
+        LogUtils.td("apply test location " + mLocationIndex + "/" + mTestLocationList.size());
+
+        // schedule for next loc
+        if (mLocationIndex < mTestLocationList.size()) {
+            Location nextLoc = getTestLocation();
+            long locTimeDiff = (long) (Math.abs(nextLoc.getTime() - loc.getTime()) / getRealTestPlaySpeed());
+            new Timer().schedule(new TimerTask() {
+                public void run() {
+                    loopApplyTestData();
+                }
+            }, locTimeDiff);
+        }
+    }
+
+    /**
+     * apply test data on timer
+     */
+    public static void startTestTrackingOnTimer() {
         mTestTimer = new Timer();
         mTestTimer.schedule(new TimerTask() {
             public void run() {
-                if (mLocationIndex < mTestLocationList.size()) {
-                    if (mReverseLoad) {
-                        LocationService.inst().onLocationChanged(mTestLocationList.get(mTestLocationList.size() - mLocationIndex - 1));
-                    }
-                    else {
-                        LocationService.inst().onLocationChanged(mTestLocationList.get(mLocationIndex));
-                    }
-                    mLocationIndex ++;
-                    LogUtils.td("load location " + mLocationIndex + "/" + mTestLocationList.size());
-                }
-                else {
+                if (mLocationIndex >= mTestLocationList.size()) {
                     stopTest();
+                    return;
                 }
+
+                int index = mLocationIndex;
+                if (mReverseLoad) {
+                    index = mTestLocationList.size() - mLocationIndex - 1;
+                }
+                Location loc = mTestLocationList.get(index);
+
+                long current = System.currentTimeMillis();
+                if (mLastLocationTime > 0 && mLastLocation != null) {
+                    long timeDiff = (long) ((current - mLastLocationTime) * getRealTestPlaySpeed());
+                    long locTimeDiff = Math.abs(loc.getTime() - mLastLocation.getTime());
+                    if (timeDiff < locTimeDiff) {
+                        return;
+                    }
+                }
+
+                LocationService.inst().onLocationChanged(loc);
+                mLastLocationTime = current;
+                mLastLocation = loc;
+                mLocationIndex++;
+                LogUtils.td("apply test location " + mLocationIndex + "/" + mTestLocationList.size());
             }
         }, TEST_TIMER_DELAY, TEST_TIMER_PERIOD);
     }
 
+    /**
+     * apply all test data without delay
+     */
     public static void startTestLoadAll() {
         new Thread() {
             public void run() {
@@ -92,21 +187,19 @@ public class TestData {
 
     public static void loadTestData() {
         mTestLocationList.clear();
-        //loadTestData1();
-        loadTestData2();
+        //loadTestData124();  // 124 location data
+        loadTestData2268();
     }
 
-    private static void loadTestData1() {
-        loadTestData1_0();
-        loadTestData1_1();
+    /**
+     * test data of 124 locations
+     */
+    private static void loadTestData124() {
+        loadTestData124_0();
+        loadTestData124_1();
     }
 
-    private static void loadTestData2() {
-        loadTestData2_0();
-        loadTestData2_1();
-    }
-
-    private static void loadTestData1_0() {
+    private static void loadTestData124_0() {
         loadTestLocation(createLocation(116.57786935, 39.95755379, 15.3, 5.14f, 0.4f, 3.2f, 1595294340000L));
         loadTestLocation(createLocation(116.57786744, 39.95759964, 16.1, 5.18f, 3.2f, 3.2f, 1595294341000L));
         loadTestLocation(createLocation(116.57786914, 39.95764121, 16.1, 4.35f, 2.3f, 3.2f, 1595294342000L));
@@ -133,7 +226,7 @@ public class TestData {
         loadTestLocation(createLocation(116.57776393, 39.95795417, 11.6, 0.0f, 0.0f, 3.2f, 1595294379000L));
     }
 
-    private static void loadTestData1_1() {
+    private static void loadTestData124_1() {
         loadTestLocation(createLocation(116.57776756, 39.95795928, 7.4, 0.0f, 0.0f, 3.2f, 1595294383000L));
         loadTestLocation(createLocation(116.57776742, 39.95796613, 7.1, 1.1f, 343.2f, 3.2f, 1595294388000L));
         loadTestLocation(createLocation(116.57775592, 39.95797902, 7.1, 2.28f, 328.4f, 3.2f, 1595294389000L));
@@ -236,7 +329,15 @@ public class TestData {
         loadTestLocation(createLocation(116.56911396, 39.96127258, 16.7, 11.07f, 355.8f, 3.2f, 1595294486000L));
     }
 
-    private static void loadTestData2_0() {
+    /**
+     * test data of 2268 locations
+     */
+    private static void loadTestData2268() {
+        loadTestData2268_0();
+        loadTestData2268_1();
+    }
+
+    private static void loadTestData2268_0() {
         loadTestLocation(createLocation(116.63871134, 39.89615959, 14.1, 0.0f, 0.0f, 28.9f, 1595292866540L));
         loadTestLocation(createLocation(116.63869898, 39.89607664, 11.3, 0.0f, 0.0f, 24.7f, 1595292867000L));
         loadTestLocation(createLocation(116.63870119, 39.89604052, 3.1, 0.0f, 0.0f, 11.8f, 1595292869000L));
@@ -1310,7 +1411,7 @@ public class TestData {
         loadTestLocation(createLocation(116.58345066, 39.93509625, 9.1, 11.31f, 354.4f, 3.2f, 1595294085000L));
     }
 
-    private static void loadTestData2_1() {
+    private static void loadTestData2268_1() {
         loadTestLocation(createLocation(116.58343753, 39.93520015, 9.5, 11.99f, 355.1f, 3.2f, 1595294086000L));
         loadTestLocation(createLocation(116.5834261, 39.93529615, 9.9, 10.94f, 355.4f, 3.2f, 1595294087000L));
         loadTestLocation(createLocation(116.5834163, 39.93539676, 10.6, 11.23f, 355.6f, 3.2f, 1595294088000L));

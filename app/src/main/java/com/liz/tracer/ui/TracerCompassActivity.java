@@ -17,10 +17,7 @@ import com.liz.tracer.logic.TestData;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class TracerDataActivity extends TracerBaseActivity {
-
-    private static final int UI_TIMER_DELAY = 200;
-    private static final int UI_TIMER_PERIOD = 1000;
+public class TracerCompassActivity extends TracerBaseActivity {
 
     private TextView tvTimeCurrent;
     private TextView tvTimeStart;
@@ -53,14 +50,14 @@ public class TracerDataActivity extends TracerBaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_tracer_data);
+        setContentView(R.layout.activity_tracer_compass);
 
         addFlingView(findViewById(R.id.ll_tracer_main));
 
         tvTimeCurrent = findViewById(R.id.text_current_time);
         tvTimeStart = findViewById(R.id.text_start_time);
         tvTimeElapsed = findViewById(R.id.text_time_elapsed);
-        tvCurrentSpeed = findViewById(R.id.text_current_speed);
+        tvCurrentSpeed = findViewById(R.id.text_current_speed_bar_color);
         tvCurrentSpeedInfo = findViewById(R.id.text_current_speed_info);
         tvAverageSpeed = findViewById(R.id.text_average_speed);
         tvAverageSpeedInfo = findViewById(R.id.text_average_speed_info);
@@ -76,17 +73,6 @@ public class TracerDataActivity extends TracerBaseActivity {
 
         mCurrentBearing = LocationService.inst().getBearing();
         ivOrientation.setRotation(mCurrentBearing);
-
-        LocationService.inst().addLocationCallback(new LocationService.LocationCallback() {
-            @Override
-            public void onLocationUpdate() {
-                TracerDataActivity.this.runOnUiThread(new Runnable() {
-                    public void run() {
-                        updateUI();
-                    }
-                });
-            }
-        });
 
         //##@:
         //mCurrentBearing = LocationService.inst().getBearing();
@@ -105,7 +91,7 @@ public class TracerDataActivity extends TracerBaseActivity {
     private static final int BEARING_ANIMATION_NUM = 40;
     private static final float BEARING_INC_MIN = 0.5f;
 
-    private float mCurrentBearing = 0;
+    private float mCurrentBearing = 0;  // 0~359 degree, zero at north, clockwise
     private Timer mBearingTimer = null;
 
     private void stopBearingTimer() {
@@ -155,7 +141,7 @@ public class TracerDataActivity extends TracerBaseActivity {
         mBearingTimer = new Timer();
         mBearingTimer.schedule(new TimerTask() {
             public void run() {
-                TracerDataActivity.this.runOnUiThread(new Runnable() {
+                TracerCompassActivity.this.runOnUiThread(new Runnable() {
                     public void run() {
                         mCurrentBearing += timerInc;
                         if (mCurrentBearing < BEARING_MIN) {

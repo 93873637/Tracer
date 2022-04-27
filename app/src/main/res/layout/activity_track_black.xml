@@ -4,7 +4,6 @@
     android:id="@+id/ll_track_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.TrackBlackActivity"
     android:background="#000033"
     android:orientation="vertical">
 
@@ -78,7 +77,7 @@
             android:layout_marginBottom="6dp"
             />
         <TextView
-            android:id="@+id/text_test_info"
+            android:id="@+id/text_location_info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="6dp"
@@ -115,7 +114,7 @@
             android:textStyle="bold" />
     </RelativeLayout>
 
-    <!-- current speed bar -->
+    <!-- current threshold bar -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -126,7 +125,7 @@
         android:background="#000033"
         >
         <TextView
-            android:id="@+id/text_current_speed"
+            android:id="@+id/text_current_speed_bar_color"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="0dp"
@@ -153,7 +152,7 @@
             />
     </RelativeLayout>
 
-    <!-- average speed bar -->
+    <!-- average threshold bar -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

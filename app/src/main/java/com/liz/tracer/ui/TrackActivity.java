@@ -1,7 +1,6 @@
 package com.liz.tracer.ui;
 
 import android.os.Bundle;
-import android.view.View;
 import android.widget.TextView;
 
 import com.liz.androidutils.LocationUtils;
@@ -19,7 +18,7 @@ abstract class TrackActivity extends TracerBaseActivity {
     private TextView tvTimeElapsed;
 
     private TrackSurfaceView mTrackSurface;
-    private TextView tvTestInfo;
+    private TextView tvLocationInfo;
     private TextView tvBearing;
     private TextView tvMapInfo;
 
@@ -56,28 +55,19 @@ abstract class TrackActivity extends TracerBaseActivity {
         tvTimeElapsed = findViewById(R.id.text_time_elapsed);
 
         mTrackSurface = findViewById(R.id.track_surface_view);
-        tvTestInfo = findViewById(R.id.text_test_info);
+        mTrackSurface.setSurfaceCallback(this::updateUI);
+
+        tvLocationInfo = findViewById(R.id.text_location_info);
         tvBearing = findViewById(R.id.text_bearing);
         tvMapInfo = findViewById(R.id.text_map_info);
 
-        tvCurrentSpeed = findViewById(R.id.text_current_speed);
+        tvCurrentSpeed = findViewById(R.id.text_current_speed_bar_color);
         tvCurrentSpeedInfo = findViewById(R.id.text_current_speed_info);
         tvAverageSpeed = findViewById(R.id.text_average_speed);
         tvAverageSpeedInfo = findViewById(R.id.text_average_speed_info);
 
         tvTotalDistance = findViewById(R.id.text_total_distance);
         tvMaxSpeed = findViewById(R.id.text_max_speed);
-
-        LocationService.inst().addLocationCallback(new LocationService.LocationCallback() {
-            @Override
-            public void onLocationUpdate() {
-                TrackActivity.this.runOnUiThread(new Runnable() {
-                    public void run() {
-                        updateUI();
-                    }
-                });
-            }
-        });
     }
 
     protected void setBackground(int r, int g, int b) {
@@ -110,8 +100,7 @@ abstract class TrackActivity extends TracerBaseActivity {
         tvMapInfo.setText(DataLogic.inst().getMapInfo());
 
         if (TestData.isTestMode()) {
-            tvTestInfo.setVisibility(View.VISIBLE);
-            tvTestInfo.setText(DataLogic.inst().getTestInfo());
+            tvLocationInfo.setText(DataLogic.inst().getTestInfo());
             if (TestData.testSpeedBearing()) {
                 testSpeed += TEST_SPEED_INC;
                 setSpeedView(tvCurrentSpeed, testSpeed);
@@ -126,7 +115,7 @@ abstract class TrackActivity extends TracerBaseActivity {
                 tvAverageSpeedInfo.setText(LocationService.inst().getAverageSpeedText());
             }
         } else {
-            tvTestInfo.setVisibility(View.INVISIBLE);
+            tvLocationInfo.setText(LocationService.inst().getLocationInfo());
             setSpeedView(tvCurrentSpeed, LocationService.inst().getCurrentSpeed());
             setSpeedView(tvAverageSpeed, LocationService.inst().getAverageSpeed());
             tvCurrentSpeedInfo.setText(LocationService.inst().getCurrentSpeedText());

@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <application
         android:name=".app.MyApp"
@@ -26,9 +27,10 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.TracerMainActivity" android:screenOrientation="portrait"/>
-        <activity android:name=".ui.TracerDataActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.TracerCompassActivity" android:screenOrientation="portrait"/>
         <activity android:name=".ui.TrackBlackActivity" android:screenOrientation="portrait"/>
         <activity android:name=".ui.TrackWhiteActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.GoRunningActivity" android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

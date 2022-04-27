@@ -64,7 +64,7 @@
             />
     </LinearLayout>
 
-    <!-- current speed bar -->
+    <!-- current threshold bar -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -75,7 +75,7 @@
         android:background="#e0e0e0"
         >
         <TextView
-            android:id="@+id/text_current_speed"
+            android:id="@+id/text_current_speed_bar_color"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:gravity="center"
@@ -97,7 +97,7 @@
             />
     </RelativeLayout>
 
-    <!-- average speed bar -->
+    <!-- average threshold bar -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

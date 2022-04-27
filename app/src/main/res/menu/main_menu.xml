@@ -1,19 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+<!--    <item-->
+<!--        android:id="@+id/action_play_trace_file"-->
+<!--        android:orderInCategory="100"-->
+<!--        android:title="Play Trace File..."-->
+<!--        app:showAsAction="never" />-->
+<!--    <item-->
+<!--        android:id="@+id/action_load_trace_file"-->
+<!--        android:orderInCategory="100"-->
+<!--        android:title="Load Trace File..."-->
+<!--        app:showAsAction="never" />-->
     <item
-        android:id="@+id/action_test_mode_track"
+        android:id="@+id/action_play_test_data"
         android:orderInCategory="100"
-        android:title="Test Mode Track"
+        android:title="Play Test Data"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_test_mode_track_reverse"
+        android:id="@+id/action_play_test_data_reverse"
         android:orderInCategory="100"
-        android:title="Test Mode Track Reverse"
+        android:title="Play Test Data Reverse"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_test_mode_load_all"
+        android:id="@+id/action_load_test_data"
         android:orderInCategory="100"
-        android:title="Test Mode Load"
+        android:title="Load Test Data"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_set_test_play_speed"
+        android:orderInCategory="100"
+        android:title="Set Test Play Speed"
         app:showAsAction="never" />
 </menu>

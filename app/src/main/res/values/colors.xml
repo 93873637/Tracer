@@ -3,4 +3,12 @@
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
+
+    <color name="go_running_background_color">#000009</color>
+    <color name="go_running_timebar_background_color">#000066</color>
+    <color name="go_running_graph_bar_bgcolor">#2a2a2a</color>
+    <color name="go_running_bottom_background_color">#000055</color>
+    <color name="go_running_speed_rank_background_color">#000055</color>
+    <color name="go_running_time_text">#FFFFFF</color>
+
 </resources>

@@ -1,4 +1,5 @@
 <resources>
+
     <dimen name="main_text_size">22sp</dimen>
     <dimen name="time_text_size">22sp</dimen>
     <dimen name="time_padding_top">6dp</dimen>
@@ -8,4 +9,15 @@
     <dimen name="tracer_text_size">30sp</dimen>
     <dimen name="track_text_size">28sp</dimen>
     <dimen name="track_surface_text_size">22sp</dimen>
+
+    <dimen name="go_running_kmtime_text_size">30sp</dimen>
+    <dimen name="go_running_text_size">30sp</dimen>
+    <dimen name="go_running_text_small_size">28sp</dimen>
+
+    <dimen name="go_running_text_small_size_ch">25sp</dimen>
+    <dimen name="go_running_time_text_size">30sp</dimen>
+    <dimen name="go_running_distance_total_text_size">88sp</dimen>
+    <dimen name="go_running_speed_text_size">44sp</dimen>
+    <dimen name="go_running_speed_rank_text_size">5sp</dimen>
+
 </resources>
