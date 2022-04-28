@@ -27,7 +27,7 @@ fi
 
 run_git_cmd "git status"
 run_git_cmd "git add ."
-run_git_cmd "git commit -m update_${TIME_FLAG}"
+run_git_cmd "git commit -m auto_update_${TIME_FLAG}"
 run_git_cmd "git push git@github.com:93873637/${REPO_NAME}"
 run_git_cmd "git status"
 run_git_cmd "git log"
