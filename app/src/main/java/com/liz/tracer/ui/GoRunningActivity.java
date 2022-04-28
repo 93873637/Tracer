@@ -72,7 +72,7 @@ public class GoRunningActivity extends TracerBaseActivity {
         tvTimeStart = findViewById(R.id.text_start_time);
         tvTimeElapsed = findViewById(R.id.text_time_elapsed);
 
-        tvKMLastInfo = findViewById(R.id.text_last_info);
+        tvKMLastInfo = findViewById(R.id.text_km_duration_info);
         tvKMRecordInfo = findViewById(R.id.text_km_record);
         tvSpeedRecordInfo = findViewById(R.id.text_speed_record);
 
