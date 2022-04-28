@@ -66,6 +66,7 @@ public class VirtualMap {
     private ArrayList<Double> mKMRecordList = new ArrayList<>();
     private long mLastKMTime = System.currentTimeMillis();  // unit by ms
 
+    private ArrayList<Double> mMinuteMetersList = new ArrayList<>();
     private ArrayList<Double> mMinuteRecordList = new ArrayList<>();
     private long mLastMinuteTime = System.currentTimeMillis();  // unit by ms
     private double mLastMinuteDistance = 0;  // unit by meter
