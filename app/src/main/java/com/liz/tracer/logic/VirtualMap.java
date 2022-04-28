@@ -323,7 +323,10 @@ public class VirtualMap {
     }
 
     private void insertKMRecordList(double duration) {
-        // find and insert into current list
+        // first add to km duration list
+        mKMDurationList.add(mKMDurationLast);
+
+        // find position and insert into current list
         int index = mKMRecordList.size();
         for (int i = 0; i < mKMRecordList.size(); i++) {
             if (duration < mKMRecordList.get(i)) {
@@ -351,7 +354,10 @@ public class VirtualMap {
     }
 
     private void insertMinuteRecordList(double minuteDistance) {
-        // find and insert into current list
+        // first put minute meters list in queue
+        mMinuteMetersList.add(minuteDistance);
+
+        // find position and insert into record list
         int index = mMinuteRecordList.size();
         for (int i = 0; i < mMinuteRecordList.size(); i++) {
             if (minuteDistance > mMinuteRecordList.get(i)) {
@@ -388,7 +394,6 @@ public class VirtualMap {
         if (mKMDistanceDiff >= 1000) {
             long timeDiff = current - mLastKMTime;
             mKMDurationLast = timeDiff * 1000 / mKMDistanceDiff;
-            mKMDurationList.add(mKMDurationLast);
             insertKMRecordList(mKMDurationLast);
             mLastKMDistance = ((int) (mDistanceTotal / 1000)) * 1000;
             mLastKMTime = current;
@@ -402,8 +407,8 @@ public class VirtualMap {
         long minuteDiff = current - mLastMinuteTime;
         if (minuteDiff > ComDef.MINUTE_MS) {
             double distanceDiff = mDistanceTotal - mLastMinuteDistance;
-            double minuteDistanceDiff = distanceDiff * ComDef.MINUTE_MS / minuteDiff;
-            insertMinuteRecordList(minuteDistanceDiff);
+            double minuteDistance = distanceDiff * ComDef.MINUTE_MS / minuteDiff;
+            insertMinuteRecordList(minuteDistance);
             mLastMinuteDistance = mDistanceTotal;
             mLastMinuteTime = current;
         }
