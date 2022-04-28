@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:andorid="http://schemas.android.com/apk/res-auto"
     android:id="@+id/ll_track_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -171,18 +172,40 @@
             android:textColor="#ffff00"
             android:textSize="@dimen/go_running_distance_total_text_size"
             android:textStyle="bold" />
-        <TextView
-            android:id="@+id/text_current_km_duration"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="33dp"
-            android:layout_marginBottom="10dp"
-            android:gravity="center"
-            android:text="99:99"
-            android:textColor="#00ff00"
-            android:textSize="@dimen/go_running_time_text_size"
-            android:textStyle="bold" />
+            android:layout_marginTop="5dp"
+            android:layout_marginStart="3dp"
+            android:gravity="start"
+            android:background="@color/go_running_background_color"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/text_current_minute_meters"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:layout_gravity="start"
+                android:layout_marginTop="0dp"
+                android:layout_marginBottom="0dp"
+                android:gravity="center"
+                android:text="99:99"
+                android:textColor="#00ff00"
+                android:textSize="@dimen/go_running_text_small_size"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/text_current_km_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginTop="0dp"
+                android:layout_marginBottom="0dp"
+                android:gravity="center"
+                android:text="99:99"
+                android:textColor="#00ff00"
+                android:textSize="@dimen/go_running_text_small_size"
+                android:textStyle="bold" />
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Meters per minute record bar -->

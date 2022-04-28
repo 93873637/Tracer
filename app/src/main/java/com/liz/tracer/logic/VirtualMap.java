@@ -122,6 +122,28 @@ public class VirtualMap {
         return getDurationTextHtml(curDuration, TimeUtils.formatDurationCompact(curDuration));
     }
 
+    public String getCurrentMinuteMetersHtml() {
+        // get current distance from last minute distance
+        double curMinuteDist = mDistanceTotal - mLastMinuteDistance;  // unit by meter
+
+        // To decide meter color within a minute,
+        // we need to estimate total distance of this minute by current speed
+        String color = "yellow";
+        double minuteDuration = System.currentTimeMillis() - mLastMinuteTime;  // unit by ms
+        if (minuteDuration > 1000) {
+            double totalMinuteDist = curMinuteDist * ComDef.MINUTE_MS / minuteDuration;
+            if (totalMinuteDist >= ComDef.DEFAULT_TARGET_MINUTE_METERS) {
+                color = "green";
+            } else {
+                color = "red";
+            }
+        }
+
+        return "<font color=" + color + ">"
+                + ((int) curMinuteDist)
+                + "</font>";
+    }
+
     public String getMaxSpeedHtml() {
         double speed = LocationService.inst().getMaxSpeed();
         //String text = LocationUtils.getTriSpeedText2(speed);
@@ -218,7 +240,7 @@ public class VirtualMap {
     }
 
     /**
-     * @param minuteMeter: meters of this minute
+     * @param minuteMeter: meters of this minute(total 60s)
      * @return String with color info
      */
     public String getColorMinuteDistance(double minuteMeter) {
@@ -227,10 +249,10 @@ public class VirtualMap {
         // return getColorDuration(kmDuration);
         String color = "red";
         if (minuteMeter >= ComDef.DEFAULT_TARGET_MINUTE_METERS) {
-        }
             color = "green";
+        }
         return "<font color=" + color + ">"
-                + ((int)minuteMeter)
+                + ((int) minuteMeter)
                 + "</font>";
     }
 

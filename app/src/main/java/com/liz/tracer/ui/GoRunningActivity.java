@@ -25,6 +25,7 @@ public class GoRunningActivity extends TracerBaseActivity {
     private TextView tvSpeedRecordInfo;
     private TextView tvMinuteRecordInfo;
     private TextView tvTotalDistance;
+    private TextView tvCurrentMinuteMeters;
     private TextView tvCurrentKMDuration;
     private TextView tvTotalPerform;
     private TextView tvCurrentPerform;
@@ -78,6 +79,7 @@ public class GoRunningActivity extends TracerBaseActivity {
         tvMinuteRecordInfo = findViewById(R.id.text_minute_record);
 
         tvTotalDistance = findViewById(R.id.text_total_distance);
+        tvCurrentMinuteMeters = findViewById(R.id.text_current_minute_meters);
         tvCurrentKMDuration = findViewById(R.id.text_current_km_duration);
         tvTotalPerform = findViewById(R.id.text_total_perform);
         tvCurrentPerform = findViewById(R.id.text_current_perform);
@@ -108,7 +110,7 @@ public class GoRunningActivity extends TracerBaseActivity {
                 new Thread(() -> {
                     // add color effect for new KM record
                     try {
-                        for (int i=0; i<16; i++) {
+                        for (int i = 0; i < 16; i++) {
                             checkUpdateNewKMRecord(i, index);
                             Thread.sleep(500);
                         }
@@ -123,7 +125,7 @@ public class GoRunningActivity extends TracerBaseActivity {
                 new Thread(() -> {
                     // add color effect for new KM record
                     try {
-                        for (int i=0; i<16; i++) {
+                        for (int i = 0; i < 16; i++) {
                             checkUpdateNewMinuteRecord(i, index);
                             Thread.sleep(500);
                         }
@@ -138,7 +140,7 @@ public class GoRunningActivity extends TracerBaseActivity {
                 new Thread(() -> {
                     // add color effect for new speed record
                     try {
-                        for (int i=0; i<16; i++) {
+                        for (int i = 0; i < 16; i++) {
                             checkUpdateNewSpeedRecord(i);
                             Thread.sleep(500);
                         }
@@ -153,20 +155,15 @@ public class GoRunningActivity extends TracerBaseActivity {
     private int getBackgroundColor(final int index) {
         if (index == 0) {
             return 0xffffef0e;  // gold
-        }
-        else if (index == 1) {
+        } else if (index == 1) {
             return 0xffefefef;  // silver
-        }
-        else if (index == 2) {
+        } else if (index == 2) {
             return 0xffdf6f01;  // bronze
-        }
-        else if (index == 4) {
+        } else if (index == 4) {
             return 0xffcdcdcd;  // silver-2
-        }
-        else if (index == 5) {
+        } else if (index == 5) {
             return 0xffababab;  // silver-3
-        }
-        else {
+        } else {
             return 0xff77ff77;
         }
     }
@@ -238,6 +235,7 @@ public class GoRunningActivity extends TracerBaseActivity {
         tvTimeElapsed.setText(LocationService.inst().getDurationTextFormat());
 
         tvTotalDistance.setText(DataLogic.inst().getDistanceTotalText(false));
+        tvCurrentMinuteMeters.setText(Html.fromHtml(DataLogic.inst().getCurrentMinuteMetersHtml()));
         tvCurrentKMDuration.setText(Html.fromHtml(DataLogic.inst().getCurrentKMDurationHtml()));
         tvKMLastInfo.setText(Html.fromHtml(DataLogic.inst().getLastKMTimesInfo()));
         tvKMRecordInfo.setText(Html.fromHtml(DataLogic.inst().getKMRecordInfo()));

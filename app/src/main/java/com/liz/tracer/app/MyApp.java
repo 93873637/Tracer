@@ -36,8 +36,8 @@ public class MyApp extends AppEx {
 
         mSoundMaxSpeed = new SoundPlayer(R.raw.beep);
         mSoundKilometer = new SoundPlayer(R.raw.europa);
-        mSoundKMChampion = new SoundPlayer(R.raw.victory_km_champion);
-        mSoundMinuteChampion = new SoundPlayer(R.raw.victory_minute_champion);
+        mSoundKMChampion = new SoundPlayer(R.raw.victory_champion_km);
+        mSoundMinuteChampion = new SoundPlayer(R.raw.victory_champion_minute);
     }
 
     public static void playSoundMaxSpeed() {
